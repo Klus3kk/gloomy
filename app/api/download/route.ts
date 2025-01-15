@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs"; // Using promise-based fs
+import { promises as fs } from "fs";
 import path from "path";
 
 // A real database or secure storage should be used instead of hardcoding passwords
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid file or folder specified" }, { status: 400 });
   }
 
-  const fileKey = `${folder}/${fileName}`;
+  const fileKey = `${folder}/${fileName}`; // Combine folder and file name
   if (!filePasswords[fileKey]) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
@@ -29,8 +29,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const filePath = path.join(process.cwd(), "files", folder, fileName);
-    await fs.access(filePath);
+    const filePath = path.join(process.cwd(), "app/files", folder, fileName); // Adjust path here if necessary
+    await fs.access(filePath); // Check if file exists
 
     const fileBuffer = await fs.readFile(filePath);
     return new NextResponse(fileBuffer, {
