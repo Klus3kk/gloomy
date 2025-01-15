@@ -3,12 +3,12 @@ import path from "path";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const filesDir = path.join(process.cwd(), "public/files"); // Correct the directory path
+  const filesDir = path.join(process.cwd(), "public/files");
 
   const getFiles = (dirPath: string): Record<string, string[]> => {
     const categories: Record<string, string[]> = {};
-
     const files = fs.readdirSync(dirPath, { withFileTypes: true });
+
     for (const file of files) {
       const fullPath = path.join(dirPath, file.name);
 

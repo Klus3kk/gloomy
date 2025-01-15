@@ -16,16 +16,20 @@ export default function Downloads() {
     const fetchFiles = async () => {
       try {
         const response = await fetch("/api/files");
-        if (!response.ok) throw new Error("Failed to fetch files");
+        if (!response.ok) {
+          console.error("API response not OK:", response.statusText);
+          throw new Error("Failed to fetch files");
+        }
+  
         const data = await response.json();
+        console.log("Fetched files:", data); // Debugowanie
         setFileCategories(data);
   
-        // Mock file passwords for security
+        // Mock file passwords
         const mockPasswords: Record<string, string> = {};
         Object.entries(data).forEach(([category, files]) => {
-          // Explicitly assert files as a string array
           (files as string[]).forEach((file) => {
-            mockPasswords[`${category}/${file}`] = "niepamietam11"; // Set unique passwords for each file
+            mockPasswords[`${category}/${file}`] = "niepamietam11"; // Example password
           });
         });
         setPasswords(mockPasswords);
@@ -37,6 +41,7 @@ export default function Downloads() {
     fetchFiles();
   }, []);
   
+
 
   const handleDownload = async (file: string, folder: string | null) => {
     try {

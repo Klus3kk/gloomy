@@ -2,17 +2,16 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
-// A real database or secure storage should be used instead of hardcoding passwords
-const filePasswords: Record<string, string> = {
-  "media/walus.zip": "niepamietam11",
-};
-
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const fileName = searchParams.get("file");
   const folder = searchParams.get("folder");
   const password = searchParams.get("password");
+
+  const filePasswords: Record<string, string> = {
+    "media/walus.zip": "niepamietam11",
+  };
 
   if (!fileName || !folder) {
     return NextResponse.json({ error: "Invalid file or folder specified" }, { status: 400 });
@@ -28,10 +27,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    const filePath = path.join(process.cwd(), "public/files", folder, fileName); // Corrected path
-    await fs.access(filePath);
-
+    const filePath = path.join(process.cwd(), "public/files", folder, fileName);
     const fileBuffer = await fs.readFile(filePath);
+
     return new NextResponse(fileBuffer, {
       headers: {
         "Content-Type": "application/octet-stream",
