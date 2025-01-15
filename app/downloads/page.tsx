@@ -15,17 +15,14 @@ export default function Downloads() {
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await fetch("/api/files");
+        const response = await fetch("/api/files.json");
         if (!response.ok) {
-          console.error("API response not OK:", response.statusText);
-          throw new Error("Failed to fetch files");
+          throw new Error(`Failed to fetch files: ${response.statusText}`);
         }
   
         const data = await response.json();
-        console.log("Fetched files:", data); // Debugowanie
         setFileCategories(data);
   
-        // Mock file passwords
         const mockPasswords: Record<string, string> = {};
         Object.entries(data).forEach(([category, files]) => {
           (files as string[]).forEach((file) => {
@@ -41,32 +38,50 @@ export default function Downloads() {
     fetchFiles();
   }, []);
   
-
-
-  const handleDownload = async (file: string, folder: string | null) => {
-    try {
-      const response = await fetch(
-        `/api/download?file=${file}&password=${enteredPassword}&folder=${folder || ""}`
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to download file");
-      }
   
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
   
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = file;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Error downloading file:", error);
-      alert((error as Error).message);
-    }
+
+  const handleDownload = (file: string, folder: string | null) => {
+    const filePath = `/media/${file}`; // Adjusted to point directly to files
+    const link = document.createElement("a");
+    link.href = filePath;
+    link.download = file;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
+  
+  // const handleDownload = async (file: string, folder: string | null) => {
+  //   const fileKey = `${folder}/${file}`;
+  //   if (passwords[fileKey] !== enteredPassword) {
+  //     alert("Invalid password!");
+  //     return;
+  //   }
+  
+  //   try {
+  //     const response = await fetch(
+  //       `/api/download?file=${file}&password=${enteredPassword}&folder=${folder || ""}`
+  //     );
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.error || "Failed to download file");
+  //     }
+  
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.download = file;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //   } catch (error) {
+  //     console.error("Error downloading file:", error);
+  //     alert((error as Error).message);
+  //   }
+  // };
+  
   
   
   const filteredFilesAcrossCategories = () => {
