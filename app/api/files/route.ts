@@ -3,7 +3,7 @@ import path from "path";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const filesDir = path.join(process.cwd(), "app/files"); 
+  const filesDir = path.join(process.cwd(), "public/files"); // Correct the directory path
 
   const getFiles = (dirPath: string): Record<string, string[]> => {
     const categories: Record<string, string[]> = {};

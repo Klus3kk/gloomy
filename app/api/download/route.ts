@@ -4,9 +4,9 @@ import path from "path";
 
 // A real database or secure storage should be used instead of hardcoding passwords
 const filePasswords: Record<string, string> = {
-  "media/example.zip": "12345",
-  "media/test.txt": "dupa",
+  "media/walus.zip": "niepamietam11",
 };
+
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -18,19 +18,18 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid file or folder specified" }, { status: 400 });
   }
 
-  const fileKey = `${folder}/${fileName}`; // Combine folder and file name
+  const fileKey = `${folder}/${fileName}`;
   if (!filePasswords[fileKey]) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
 
-  // Validate password
   if (filePasswords[fileKey] !== password) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
 
   try {
-    const filePath = path.join(process.cwd(), "app/files", folder, fileName); // Adjust path here if necessary
-    await fs.access(filePath); // Check if file exists
+    const filePath = path.join(process.cwd(), "public/files", folder, fileName); // Corrected path
+    await fs.access(filePath);
 
     const fileBuffer = await fs.readFile(filePath);
     return new NextResponse(fileBuffer, {

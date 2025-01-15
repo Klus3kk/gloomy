@@ -23,7 +23,7 @@ export default function Downloads() {
         // Mock file passwords for security
         const mockPasswords: Record<string, string> = {};
         Object.values(data).flat().forEach((file) => {
-          mockPasswords[file] = "12345"; // Set unique passwords for each file
+          mockPasswords[file] = "niepamietam11"; // Set unique passwords for each file
         });
         setPasswords(mockPasswords);
       } catch (error) {
