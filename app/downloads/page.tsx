@@ -15,12 +15,13 @@ export default function Downloads() {
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await fetch("/api/files.json");
+        const response = await fetch("/api/files.json"); // Fetch static JSON
         if (!response.ok) {
           throw new Error(`Failed to fetch files: ${response.statusText}`);
         }
   
         const data = await response.json();
+        console.log("Fetched files:", data); // Debugging
         setFileCategories(data);
   
         const mockPasswords: Record<string, string> = {};
@@ -40,9 +41,10 @@ export default function Downloads() {
   
   
   
+  
 
   const handleDownload = (file: string, folder: string | null) => {
-    const filePath = `/media/${file}`; // Adjusted to point directly to files
+    const filePath = folder ? `/media/${folder}/${file}` : `/media/${file}`; 
     const link = document.createElement("a");
     link.href = filePath;
     link.download = file;
@@ -50,6 +52,8 @@ export default function Downloads() {
     link.click();
     document.body.removeChild(link);
   };
+  
+  
   
   // const handleDownload = async (file: string, folder: string | null) => {
   //   const fileKey = `${folder}/${file}`;
