@@ -19,20 +19,24 @@ export default function Downloads() {
         if (!response.ok) throw new Error("Failed to fetch files");
         const data = await response.json();
         setFileCategories(data);
-
+  
         // Mock file passwords for security
         const mockPasswords: Record<string, string> = {};
-        Object.values(data).flat().forEach((file) => {
-          mockPasswords[file] = "niepamietam11"; // Set unique passwords for each file
+        Object.entries(data).forEach(([category, files]) => {
+          // Explicitly assert files as a string array
+          (files as string[]).forEach((file) => {
+            mockPasswords[`${category}/${file}`] = "niepamietam11"; // Set unique passwords for each file
+          });
         });
         setPasswords(mockPasswords);
       } catch (error) {
         console.error("Error fetching files:", error);
       }
     };
-
+  
     fetchFiles();
   }, []);
+  
 
   const handleDownload = async (file: string, folder: string | null) => {
     try {
@@ -55,7 +59,7 @@ export default function Downloads() {
       document.body.removeChild(link);
     } catch (error) {
       console.error("Error downloading file:", error);
-      alert(error.message);
+      alert((error as Error).message);
     }
   };
   
