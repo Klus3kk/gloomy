@@ -5,6 +5,7 @@ import path from "path";
 // A real database or secure storage should be used instead of hardcoding passwords
 const filePasswords: Record<string, string> = {
   "media/example.zip": "12345",
+  "media/test.txt": "dupa",
 };
 
 export async function GET(request: Request) {
