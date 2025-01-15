@@ -1,5 +1,8 @@
 {
-  "media": [
-    "walus.zip"
-  ]
+  "media": {
+    "walus.zip": {
+      "path": "walus.zip",
+      "password": "niepamietam11"
+    }
+  }
 }
