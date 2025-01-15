@@ -2,20 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Theme Variables */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0d1117; /* Darker tone */
+  --foreground: #507ca7; /* Softer white for text */
+  --primary: #1d4a74; /* Coral primary color */
+  --primary-hover: #0c267d; /* Darker coral for hover */
+  --accent: #00bcd4; /* Cyan accent for highlights */
+  --card-bg: rgba(255, 255, 255, 0.1); /* Glassy card background */
+  --card-border: rgba(255, 255, 255, 0.2); /* Subtle card border */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1a1a1a;
+    --foreground: #f5f5f5;
   }
 }
 
+/* Global Styles */
+main {
+  @apply flex-grow;
+}
+
 body {
+  @apply antialiased flex flex-col min-h-screen bg-background text-foreground;
+  background-color: var(--background);
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Button Styles */
+.btn {
+  @apply px-4 py-2 font-semibold rounded-lg transition-transform transform duration-200;
+  background-color: var(--primary);
+  color: var(--foreground);
+  box-shadow: 0 4px 10px rgba(26, 32, 143, 0.5);
+}
+.btn:hover {
+  background-color: var(--primary-hover);
+  box-shadow: 0 6px 15px rgba(15, 21, 133, 0.5);
+  @apply scale-105;
+}
+.btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Container Utility */
+.container {
+  @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Glassy Card Design */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  @apply p-4 bg-gray-800 text-white rounded-lg shadow hover:bg-gray-700;
+  backdrop-filter: blur(10px);
+}
+.card-title {
+  @apply text-xl font-bold mb-2 capitalize;
+}
+
+/* Section Styles */
+.section {
+  @apply py-20;
+}
+.section-title {
+  @apply text-4xl font-bold text-center mb-10 text-white;
+  text-shadow: 0 4px 10px var(--accent);
+}
+
+/* Footer */
+footer {
+  @apply bg-gray-800 text-center py-6 text-sm text-gray-400;
+}
+
+/* Hero Section */
+.hero-title {
+  @apply text-6xl font-extrabold mb-4 text-white;
+  text-shadow: 0 4px 10px var(--accent);
+}
+.hero-subtitle {
+  @apply text-xl text-gray-300;
+}
+
+/* Utility for Shadows */
+.shadow {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+.shadow:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.6);
+}
+
+input[type="text"] {
+  @apply w-full max-w-md;
+}
+button.text-blue-500 {
+  @apply font-medium hover:underline transition-all;
+}
+
+/* Fix modal readability */
+.modal-input {
+  @apply bg-gray-100 text-black border-gray-500;
+}
+.modal-input:focus {
+  @apply ring-2 ring-blue-500;
+}
+.modal-button {
+  @apply bg-blue-600 text-white hover:bg-blue-700 rounded-lg px-4 py-2;
+}
+.modal-button-cancel {
+  @apply bg-gray-500 hover:bg-gray-400;
+}
+
+html, body {
+  height: 100%;
+  overflow-y: hidden; /* Disable vertical scrolling */
 }

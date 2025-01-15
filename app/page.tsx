@@ -1,101 +1,101 @@
-import Image from "next/image";
+"use client";
+import React, { useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  useEffect(() => {
+    const canvas = document.getElementById("particles") as HTMLCanvasElement;
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      let particlesArray: {
+        x: number;
+        y: number;
+        size: number;
+        speedX: number;
+        speedY: number;
+      }[] = [];
+      let canvasWidth = canvas.width;
+      let canvasHeight = canvas.height;
+
+      const updateCanvasSize = () => {
+        canvasWidth = canvas.width = window.innerWidth;
+        canvasHeight = canvas.height = window.innerHeight;
+        particlesArray = [];
+        createParticles();
+      };
+
+      const createParticles = () => {
+        for (let i = 0; i < 100; i++) {
+          particlesArray.push({
+            x: Math.random() * canvasWidth,
+            y: Math.random() * canvasHeight,
+            size: Math.random() * 3 + 1,
+            speedX: Math.random() * 1 - 0.5,
+            speedY: Math.random() * 1 - 0.5,
+          });
+        }
+      };
+
+      const animateParticles = () => {
+        ctx!.clearRect(0, 0, canvasWidth, canvasHeight);
+        particlesArray.forEach((particle) => {
+          particle.x += particle.speedX * 0.5;
+          particle.y += particle.speedY * 0.5;
+
+          if (particle.x > canvasWidth) particle.x = 0;
+          if (particle.x < 0) particle.x = canvasWidth;
+          if (particle.y > canvasHeight) particle.y = 0;
+          if (particle.y < 0) particle.y = canvasHeight;
+
+          ctx!.beginPath();
+          ctx!.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+          ctx!.fillStyle = "rgba(255, 255, 255, 0.6)";
+          ctx!.fill();
+        });
+        requestAnimationFrame(animateParticles);
+      };
+
+      updateCanvasSize();
+      createParticles();
+      animateParticles();
+
+      window.addEventListener("resize", updateCanvasSize);
+
+      return () => {
+        window.removeEventListener("resize", updateCanvasSize);
+      };
+    }
+  }, []);
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section
+        className="relative flex-grow flex items-center justify-center text-center text-white min-h-screen"
+        style={{
+          backgroundImage: "url('/wallpaper.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Particle Canvas */}
+        <canvas
+          id="particles"
+          className="absolute inset-0 z-0 pointer-events-none"
+        ></canvas>
+        {/* Background Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-40 z-5"></div>
+        {/* Hero Content */}
+        <div className="relative z-10 max-w-4xl px-4 text-center">
+          <h1 className="text-6xl font-extrabold mb-4 drop-shadow-lg">
+            Welcome to Gloomy
+          </h1>
+          <p className="text-xl drop-shadow-md">
+            Your trusted platform for secure and organized file downloads.
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
     </div>
   );
+  
 }
