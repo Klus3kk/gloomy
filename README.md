@@ -1,6 +1,6 @@
 # Gloomy - File Downloader
 
-<img src="public/logo.png" alt="Gloomy Logo" width="100"/>
+<img src="public/logo.png" alt="Gloomy Logo" width="150"/>
 
 Gloomy is a secure file downloader application. Built with **Next.js**, it offers password-protected file downloads and a modern interface for seamless use.
 
