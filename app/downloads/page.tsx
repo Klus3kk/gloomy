@@ -10,12 +10,11 @@ interface DownloadFile {
   description: string;
   category: string;
   visibility: FileVisibility;
-  password?: string;
   passwordHint?: string;
-  downloadUrl: string;
   sizeBytes: number;
   createdAt: string;
   tags: string[];
+  hasPassword: boolean;
 }
 
 interface CatalogResponse {
@@ -30,6 +29,7 @@ interface PasswordDialogState {
   file: DownloadFile;
   value: string;
   error: string | null;
+  loading: boolean;
 }
 
 type ViewMode = "gallery" | "list" | "details";
@@ -90,6 +90,8 @@ export default function DownloadsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("gallery");
   const [passwordDialog, setPasswordDialog] =
     useState<PasswordDialogState | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [downloadInFlight, setDownloadInFlight] = useState<string | null>(null);
   const [catalogNote, setCatalogNote] = useState<string | null>(null);
 
   useEffect(() => {
@@ -146,42 +148,89 @@ export default function DownloadsPage() {
     });
   }, [files, searchTerm, selectedCategory, visibilityFilter]);
 
-  const triggerDownload = (file: DownloadFile) => {
-    const link = document.createElement("a");
-    link.href = file.downloadUrl;
-    link.download = file.title;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+const triggerDownload = (url: string, filename: string) => {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+const requestDownloadUrl = async (id: string, password?: string) => {
+  const response = await fetch("/api/download", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id, password }),
+  });
+
+  const payload = (await response.json()) as {
+    downloadUrl?: string;
+    error?: string;
   };
 
-  const handleDownloadRequest = (file: DownloadFile) => {
-    if (file.visibility === "password") {
-      setPasswordDialog({ file, value: "", error: null });
+  if (!response.ok) {
+    throw new Error(payload.error ?? "Download request failed.");
+  }
+
+  if (!payload.downloadUrl) {
+    throw new Error("Download URL missing in response.");
+  }
+
+  return payload.downloadUrl;
+};
+
+  const handleDownloadRequest = async (file: DownloadFile) => {
+    if (file.hasPassword) {
+      setPasswordDialog({ file, value: "", error: null, loading: false });
       return;
     }
-    triggerDownload(file);
+
+    try {
+      setDownloadError(null);
+      setDownloadInFlight(file.id);
+      const url = await requestDownloadUrl(file.id);
+      triggerDownload(url, file.title);
+    } catch (downloadErr) {
+      setDownloadError(
+        downloadErr instanceof Error
+          ? downloadErr.message
+          : "Unable to start download.",
+      );
+    } finally {
+      setDownloadInFlight(null);
+    }
   };
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     if (!passwordDialog) return;
 
-    if (!passwordDialog.file.password) {
-      triggerDownload(passwordDialog.file);
-      setPasswordDialog(null);
+    const attempt = passwordDialog.value.trim();
+    if (!attempt) {
+      setPasswordDialog({
+        ...passwordDialog,
+        error: "Enter the password to continue.",
+      });
       return;
     }
 
-    if (passwordDialog.value.trim() === passwordDialog.file.password) {
-      triggerDownload(passwordDialog.file);
+    try {
+      setPasswordDialog({ ...passwordDialog, loading: true, error: null });
+      const url = await requestDownloadUrl(passwordDialog.file.id, attempt);
       setPasswordDialog(null);
-      return;
+      triggerDownload(url, passwordDialog.file.title);
+    } catch (verifyError) {
+      setPasswordDialog({
+        ...passwordDialog,
+        loading: false,
+        error:
+          verifyError instanceof Error
+            ? verifyError.message
+            : "Password verification failed.",
+      });
     }
-
-    setPasswordDialog({
-      ...passwordDialog,
-      error: "Incorrect password. Please try again.",
-    });
   };
 
   const viewOptions: { id: ViewMode; label: string; icon: JSX.Element }[] = [
@@ -277,20 +326,21 @@ export default function DownloadsPage() {
               ))}
             </div>
           </div>
-            <div className="mt-6 flex items-center justify-between text-xs text-white/65">
-              <div>
-                <p>Added {formatDate(file.createdAt)}</p>
-                <p>{formatBytes(file.sizeBytes)}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleDownloadRequest(file)}
-                className="inline-flex items-center gap-2 rounded-md border border-[var(--divider)] px-4 py-2 text-xs font-semibold text-white/80 transition hover:border-white/40 hover:text-white"
-              >
-                Download
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
+          <div className="mt-6 flex items-center justify-between text-xs text-white/65">
+            <div>
+              <p>Added {formatDate(file.createdAt)}</p>
+              <p>{formatBytes(file.sizeBytes)}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void handleDownloadRequest(file)}
+              disabled={downloadInFlight === file.id}
+              className="inline-flex items-center gap-2 rounded-md border border-[var(--divider)] px-4 py-2 text-xs font-semibold text-white/80 transition hover:border-white/40 hover:text-white disabled:opacity-50"
+            >
+              {downloadInFlight === file.id ? "Preparing…" : "Download"}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
                 className="h-4 w-4"
@@ -299,7 +349,7 @@ export default function DownloadsPage() {
               </svg>
             </button>
           </div>
-          {file.visibility === "password" && file.passwordHint && (
+          {file.hasPassword && file.passwordHint && (
             <p className="mt-4 rounded-md border border-[var(--divider)] px-3 py-2 text-xs text-white/65">
               <span className="font-medium text-white/70">Hint:</span> {file.passwordHint}
             </p>
@@ -340,10 +390,11 @@ export default function DownloadsPage() {
               </span>
               <button
                 type="button"
-                onClick={() => handleDownloadRequest(file)}
-                className="rounded-sm border border-[var(--divider)] px-3 py-1 text-[11px] font-medium text-white/70 transition hover:border-white/40 hover:text-white"
+                onClick={() => void handleDownloadRequest(file)}
+                disabled={downloadInFlight === file.id}
+                className="rounded-sm border border-[var(--divider)] px-3 py-1 text-[11px] font-medium text-white/70 transition hover:border-white/40 hover:text-white disabled:opacity-50"
               >
-                Download
+                {downloadInFlight === file.id ? "Preparing…" : "Download"}
               </button>
             </div>
           </div>
@@ -388,10 +439,11 @@ export default function DownloadsPage() {
               <td className="px-6 py-4 text-right">
                 <button
                   type="button"
-                  onClick={() => handleDownloadRequest(file)}
-                  className="inline-flex items-center gap-2 rounded-sm border border-[var(--divider)] px-4 py-2 text-xs font-medium text-white/70 transition hover:border-white/40 hover:text-white"
+                  onClick={() => void handleDownloadRequest(file)}
+                  disabled={downloadInFlight === file.id}
+                  className="inline-flex items-center gap-2 rounded-sm border border-[var(--divider)] px-4 py-2 text-xs font-medium text-white/70 transition hover:border-white/40 hover:text-white disabled:opacity-50"
                 >
-                  Download
+                  {downloadInFlight === file.id ? "Preparing…" : "Download"}
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
@@ -498,6 +550,12 @@ export default function DownloadsPage() {
             </div>
           ) : null}
 
+          {downloadError ? (
+            <div className="rounded-md border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-xs text-rose-200">
+              {downloadError}
+            </div>
+          ) : null}
+
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-3">
               {categories.map((category) => {
@@ -591,7 +649,7 @@ export default function DownloadsPage() {
               {passwordDialog.file.title} is locked. Provide the passphrase to continue.
             </p>
 
-            {passwordDialog.file.passwordHint && (
+            {passwordDialog.file.hasPassword && passwordDialog.file.passwordHint && (
               <p className="mt-3 rounded-md border border-[var(--divider)] px-3 py-2 text-xs text-white/65">
                 <span className="mr-2 font-medium text-white/70">
                   Hint
@@ -631,9 +689,10 @@ export default function DownloadsPage() {
               <button
                 type="button"
                 onClick={handlePasswordSubmit}
-                className="rounded-md bg-white px-5 py-2 text-xs font-medium text-black transition hover:bg-white/90"
+                disabled={passwordDialog.loading}
+                className="rounded-md bg-white px-5 py-2 text-xs font-medium text-black transition hover:bg-white/90 disabled:opacity-50"
               >
-                Unlock &amp; Download
+                {passwordDialog.loading ? "Verifying…" : "Unlock & Download"}
               </button>
             </div>
           </div>

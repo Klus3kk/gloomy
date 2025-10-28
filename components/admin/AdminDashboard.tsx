@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 import { getClientStorage } from "@/lib/firebase/client";
+import { hashPassword } from "@/lib/security/password";
 
 type AdminFile = {
   id: string;
@@ -15,7 +16,7 @@ type AdminFile = {
   storagePath: string;
   sizeBytes: number;
   passwordHint: string | null;
-  password: string | null;
+  hasPassword: boolean;
   tags: string[];
   createdAt: string | null;
   updatedAt: string | null;
@@ -76,6 +77,10 @@ const UploadForm = ({
       setError("Provide a title for the asset.");
       return;
     }
+    if (visibility === "password" && !password.trim()) {
+      setError("Provide a password for this asset.");
+      return;
+    }
 
     try {
       setState("uploading");
@@ -109,6 +114,15 @@ const UploadForm = ({
         );
       }).then(async (downloadUrl) => {
         setState("saving");
+        let passwordHash: string | null = null;
+        let passwordSalt: string | null = null;
+
+        if (visibility === "password") {
+          const hashed = await hashPassword(password.trim());
+          passwordHash = hashed.hash;
+          passwordSalt = hashed.salt;
+        }
+
         const response = await fetch("/api/admin/files", {
           method: "POST",
           headers: {
@@ -119,7 +133,8 @@ const UploadForm = ({
             description,
             category: category.trim(),
             visibility,
-            password: visibility === "password" ? password || null : null,
+            passwordHash,
+            passwordSalt,
             passwordHint:
               visibility === "password" ? passwordHint || null : null,
             tags,
@@ -226,6 +241,7 @@ const UploadForm = ({
               type="text"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter password"
               className="rounded-md border border-[var(--divider)] bg-transparent px-3 py-2 text-sm text-white focus:border-white/35 focus:outline-none"
             />
           </label>
@@ -296,7 +312,7 @@ const EditModal = ({
   const [visibility, setVisibility] = useState<"public" | "password">(
     file.visibility,
   );
-  const [password, setPassword] = useState(file.password ?? "");
+  const [newPassword, setNewPassword] = useState("");
   const [passwordHint, setPasswordHint] = useState(file.passwordHint ?? "");
   const [downloadUrl, setDownloadUrl] = useState(file.downloadUrl);
   const [tags, setTags] = useState(file.tags.join(", "));
@@ -309,6 +325,27 @@ const EditModal = ({
     setError(null);
 
     try {
+      let passwordHash: string | null | undefined;
+      let passwordSalt: string | null | undefined;
+      let passwordHintPayload: string | null | undefined;
+
+      if (visibility === "password") {
+        passwordHintPayload = passwordHint.trim() || null;
+        if (newPassword.trim()) {
+          const hashed = await hashPassword(newPassword.trim());
+          passwordHash = hashed.hash;
+          passwordSalt = hashed.salt;
+        } else if (!file.hasPassword) {
+          setError("Provide a password for this asset.");
+          setSaving(false);
+          return;
+        }
+      } else {
+        passwordHash = null;
+        passwordSalt = null;
+        passwordHintPayload = null;
+      }
+
       const response = await fetch(`/api/admin/files/${file.id}`, {
         method: "PATCH",
         headers: {
@@ -319,10 +356,9 @@ const EditModal = ({
           description,
           category,
           visibility,
-          password:
-            visibility === "password" ? password.trim() || null : null,
-          passwordHint:
-            visibility === "password" ? passwordHint.trim() || null : null,
+          passwordHash,
+          passwordSalt,
+          passwordHint: passwordHintPayload,
           tags,
           downloadUrl: downloadUrl.trim(),
         }),
@@ -334,11 +370,7 @@ const EditModal = ({
       }
 
       const data = (await response.json()) as { file: AdminFile };
-      onUpdated({
-        ...file,
-        ...data.file,
-        tags: data.file.tags ?? [],
-      });
+      onUpdated(data.file);
       onClose();
     } catch (updateError) {
       console.error(updateError);
@@ -444,12 +476,12 @@ const EditModal = ({
         {visibility === "password" ? (
           <div className="grid gap-4 md:grid-cols-2">
             <label className="flex flex-col gap-1 text-xs uppercase tracking-[0.25em] text-white/55">
-              Password
+              New password
               <input
                 type="text"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Leave empty to keep current value"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                placeholder={file.hasPassword ? "Leave blank to keep current" : "Enter password"}
                 className="rounded-md border border-[var(--divider)] bg-transparent px-3 py-2 text-sm text-white focus:border-white/35 focus:outline-none"
               />
             </label>
@@ -598,7 +630,6 @@ export const AdminDashboard = () => {
           ? {
               ...existing,
               ...updated,
-              tags: updated.tags ?? [],
             }
           : existing,
       ),
