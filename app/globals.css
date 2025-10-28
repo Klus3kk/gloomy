@@ -4,92 +4,77 @@
 
 /* Custom Theme Variables */
 :root {
-  --background: #0d1117; /* Darker tone */
-  --foreground: #507ca7; /* Softer white for text */
-  --primary: #1d4a74; /* Coral primary color */
-  --primary-hover: #0c267d; /* Darker coral for hover */
-  --accent: #00bcd4; /* Cyan accent for highlights */
-  --card-bg: rgba(255, 255, 255, 0.1); /* Glassy card background */
-  --card-border: rgba(255, 255, 255, 0.2); /* Subtle card border */
+  --base: #06080f;
+  --surface: rgba(18, 22, 34, 0.88);
+  --surface-border: rgba(120, 133, 166, 0.25);
+  --divider: rgba(120, 133, 166, 0.15);
+  --text-primary: #f5f7fb;
+  --text-secondary: rgba(228, 233, 246, 0.7);
+  --accent: #3fa2f7;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #1a1a1a;
-    --foreground: #f5f5f5;
+    --base: #05070d;
+    --surface: rgba(20, 24, 36, 0.9);
   }
 }
 
-/* Global Styles */
-main {
-  @apply flex-grow;
-}
-
 body {
-  @apply antialiased flex flex-col min-h-screen bg-background text-foreground;
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  @apply flex min-h-screen flex-col antialiased;
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(140deg, #06080f 0%, #0a0d18 70%, #06080f 100%);
+  color: var(--text-primary);
   margin: 0;
-  overflow: hidden;
 }
 
-/* Button Styles */
 .btn {
-  @apply px-4 py-2 font-semibold rounded-lg transition-transform transform duration-200;
-  background-color: var(--primary);
-  color: var(--foreground);
-  box-shadow: 0 4px 10px rgba(26, 32, 143, 0.5);
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-2 text-sm font-medium transition;
+  background-color: var(--accent);
+  color: #0b101d;
 }
 .btn:hover {
-  background-color: var(--primary-hover);
-  box-shadow: 0 6px 15px rgba(15, 21, 133, 0.5);
-  @apply scale-105;
+  background-color: #57adf9;
 }
 .btn:disabled {
   @apply opacity-50 cursor-not-allowed;
 }
 
-/* Container Utility */
 .container {
   @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
-/* Glassy Card Design */
 .card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  @apply p-4 bg-gray-800 text-white rounded-lg shadow hover:bg-gray-700;
-  backdrop-filter: blur(10px);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  @apply rounded-xl p-5 text-white transition;
 }
 .card-title {
   @apply text-xl font-bold mb-2 capitalize;
 }
 
-/* Section Styles */
 .section {
   @apply py-20;
 }
 .section-title {
-  @apply text-4xl font-bold text-center mb-10 text-white;
-  text-shadow: 0 4px 10px var(--accent);
+  @apply mb-10 text-center text-4xl font-bold text-white;
+  text-shadow: 0 16px 48px rgba(145, 114, 255, 0.35);
+}
+.section-subtitle {
+  @apply mx-auto max-w-2xl text-center text-base text-white/70;
 }
 
-/* Footer */
 footer {
   @apply bg-gray-800 text-center py-6 text-sm text-gray-400;
 }
 
-/* Hero Section */
 .hero-title {
-  @apply text-6xl font-extrabold mb-4 text-white;
-  text-shadow: 0 4px 10px var(--accent);
+  @apply text-5xl font-semibold mb-4 text-white;
 }
 .hero-subtitle {
-  @apply text-xl text-gray-300;
+  @apply text-lg text-white/70;
 }
 
-/* Utility for Shadows */
 .shadow {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
 }
@@ -104,7 +89,6 @@ button.text-blue-500 {
   @apply font-medium hover:underline transition-all;
 }
 
-/* Fix modal readability */
 .modal-input {
   @apply bg-gray-100 text-black border-gray-500;
 }
@@ -118,7 +102,12 @@ button.text-blue-500 {
   @apply bg-gray-500 hover:bg-gray-400;
 }
 
-html, body {
-  height: 100%;
-  overflow-y: hidden; /* Disable vertical scrolling */
+.glass-panel {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+}
+
+.stack-gap {
+  @apply flex flex-col gap-6;
 }

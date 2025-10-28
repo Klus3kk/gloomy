@@ -1,42 +1,7 @@
-# Gloomy - File Downloader
+# Gloomy – File Delivery Hub
 
 <img src="public/logo.png" alt="Gloomy Logo" width="150"/>
 
-Gloomy is a secure file downloader application. Built with **Next.js**, it offers password-protected file downloads and a modern interface for seamless use.
+Gloomy powers the private download experience. It blends a refined Next.js interface, p5-driven motion, and explorer-inspired layouts so internal teams can move from gallery views to dense detail tables without losing context.
 
-## Features
-
-- **Categorized File Navigation**: Browse through categories for better organization.
-- **Modern Design**: Tailwind CSS with glassmorphism and particle animations.
-
-## Prerequisites
-
-- **Node.js** (v16+)
-- **npm** or **yarn**
-
-## Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/Klus3kk/gloomy.git
-   cd gloomy
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-4. Open the app in your browser:
-
-   ```bash
-   http://localhost:3000
-   ```
+> This repository is maintained for the gloomyclue.com product footprint and is not intended for public reuse or redistribution. For access requests or questions, use the contact channel published on the site.

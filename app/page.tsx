@@ -1,101 +1,197 @@
 "use client";
-import React, { useEffect } from "react";
+import Link from "next/link";
+import { useEffect } from "react";
+
+const stats = [
+  { label: "Releases tracked", value: "128" },
+  { label: "Protected assets", value: "64" },
+  { label: "Average retrieval", value: "2.1 s" },
+];
+
+const focusPoints = [
+  {
+    title: "Catalog discipline",
+    detail: "Categories, ownership, and visibility are first-class fields so teams can find the right artifact quickly.",
+  },
+  {
+    title: "Access patterns",
+    detail: "Role-based upload, passwords when required, and signed URLs for every download keep the flow predictable.",
+  },
+  {
+    title: "Fast handoffs",
+    detail: "QuickDrop creates a single-use link for 25 MB payloads—ideal for short-lived sharing during reviews.",
+  },
+];
 
 export default function Home() {
   useEffect(() => {
-    const canvas = document.getElementById("particles") as HTMLCanvasElement;
+    const canvas = document.getElementById("particles") as HTMLCanvasElement | null;
 
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      let particlesArray: {
-        x: number;
-        y: number;
-        size: number;
-        speedX: number;
-        speedY: number;
-      }[] = [];
-      let canvasWidth = canvas.width;
-      let canvasHeight = canvas.height;
-
-      const updateCanvasSize = () => {
-        canvasWidth = canvas.width = window.innerWidth;
-        canvasHeight = canvas.height = window.innerHeight;
-        particlesArray = [];
-        createParticles();
-      };
-
-      const createParticles = () => {
-        for (let i = 0; i < 100; i++) {
-          particlesArray.push({
-            x: Math.random() * canvasWidth,
-            y: Math.random() * canvasHeight,
-            size: Math.random() * 3 + 1,
-            speedX: Math.random() * 1 - 0.5,
-            speedY: Math.random() * 1 - 0.5,
-          });
-        }
-      };
-
-      const animateParticles = () => {
-        ctx!.clearRect(0, 0, canvasWidth, canvasHeight);
-        particlesArray.forEach((particle) => {
-          particle.x += particle.speedX * 0.5;
-          particle.y += particle.speedY * 0.5;
-
-          if (particle.x > canvasWidth) particle.x = 0;
-          if (particle.x < 0) particle.x = canvasWidth;
-          if (particle.y > canvasHeight) particle.y = 0;
-          if (particle.y < 0) particle.y = canvasHeight;
-
-          ctx!.beginPath();
-          ctx!.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          ctx!.fillStyle = "rgba(255, 255, 255, 0.6)";
-          ctx!.fill();
-        });
-        requestAnimationFrame(animateParticles);
-      };
-
-      updateCanvasSize();
-      createParticles();
-      animateParticles();
-
-      window.addEventListener("resize", updateCanvasSize);
-
-      return () => {
-        window.removeEventListener("resize", updateCanvasSize);
-      };
+    if (!canvas) {
+      return;
     }
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+
+    let particlesArray: {
+      x: number;
+      y: number;
+      size: number;
+      speedX: number;
+      speedY: number;
+    }[] = [];
+    let canvasWidth = canvas.width;
+    let canvasHeight = canvas.height;
+
+    const updateCanvasSize = () => {
+      canvasWidth = canvas.width = window.innerWidth;
+      canvasHeight = canvas.height = window.innerHeight;
+      particlesArray = [];
+      createParticles();
+    };
+
+    const createParticles = () => {
+      for (let i = 0; i < 120; i += 1) {
+        particlesArray.push({
+          x: Math.random() * canvasWidth,
+          y: Math.random() * canvasHeight,
+          size: Math.random() * 3 + 0.5,
+          speedX: Math.random() * 1 - 0.5,
+          speedY: Math.random() * 1 - 0.5,
+        });
+      }
+    };
+
+    const animateParticles = () => {
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      particlesArray.forEach((particle) => {
+        const p = particle;
+        p.x += p.speedX * 0.6;
+        p.y += p.speedY * 0.6;
+
+        if (p.x > canvasWidth) p.x = 0;
+        if (p.x < 0) p.x = canvasWidth;
+        if (p.y > canvasHeight) p.y = 0;
+        if (p.y < 0) p.y = canvasHeight;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+        ctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    };
+
+    updateCanvasSize();
+    createParticles();
+    animateParticles();
+
+    window.addEventListener("resize", updateCanvasSize);
+
+    return () => {
+      window.removeEventListener("resize", updateCanvasSize);
+    };
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section
-        className="relative flex-grow flex items-center justify-center text-center text-white min-h-screen"
-        style={{
-          backgroundImage: "url('/wallpaper.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Particle Canvas */}
+    <div className="relative flex flex-col">
+      <section className="relative border-b border-[var(--divider)] py-24">
         <canvas
           id="particles"
-          className="absolute inset-0 z-0 pointer-events-none"
-        ></canvas>
-        {/* Background Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-40 z-5"></div>
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-4xl px-4 text-center">
-          <h1 className="text-6xl font-extrabold mb-4 drop-shadow-lg">
-            Welcome to Gloomy
-          </h1>
-          <p className="text-xl drop-shadow-md">
-            Your trusted platform for secure and organized file downloads.
-          </p>
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-20"
+        />
+        <div className="relative mx-auto grid w-full max-w-6xl gap-16 px-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="stack-gap">
+            <header className="stack-gap">
+              <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                Precision file distribution
+              </p>
+              <h1 className="hero-title max-w-2xl text-balance">
+                Ship builds and assets with the same care you put into creating them.
+              </h1>
+              <p className="hero-subtitle max-w-xl text-balance">
+                Gloomy keeps binaries, documentation, and design artifacts discoverable, governed, and ready to share. Focus on the release—let the platform handle access and delivery.
+              </p>
+            </header>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link href="/downloads" className="btn">
+                Browse downloads
+              </Link>
+              <Link
+                href="/quickdrop"
+                className="inline-flex items-center justify-center rounded-md border border-[var(--divider)] px-5 py-2 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                Open QuickDrop
+              </Link>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              {stats.map((item) => (
+                <dl key={item.label} className="stack-gap rounded-md border border-[var(--divider)] px-4 py-3">
+                  <dt className="text-[11px] uppercase tracking-[0.28em] text-white/50">{item.label}</dt>
+                  <dd className="text-2xl font-semibold text-white">{item.value}</dd>
+                </dl>
+              ))}
+            </div>
+          </div>
+
+          <div className="stack-gap rounded-md border border-[var(--divider)] p-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-white/55">Platform focus</p>
+              <p className="mt-1 text-sm text-white/70">
+                Designed for teams who prefer clear hierarchies, fast navigation, and predictable download flows.
+              </p>
+            </div>
+            <ul className="stack-gap">
+              {focusPoints.map((point) => (
+                <li key={point.title} className="stack-gap border-t border-[var(--divider)] pt-4 first:border-t-0 first:pt-0">
+                  <p className="text-sm font-medium text-white">{point.title}</p>
+                  <p className="text-sm text-white/65">{point.detail}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="mx-auto flex max-w-6xl flex-col gap-12 px-6">
+          <header className="max-w-3xl">
+            <h2 className="text-3xl font-semibold text-white">Built around the way technical teams share</h2>
+            <p className="mt-3 text-sm text-white/70">
+              Every screen prioritizes structure and clarity, mirroring file explorers and release dashboards you already trust. The UI fades back so the information stays front and center.
+            </p>
+          </header>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            <article className="stack-gap rounded-md border border-[var(--divider)] p-5">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/55">Explorer-inspired</p>
+              <h3 className="text-lg font-medium text-white">Multiple view modes</h3>
+              <p className="text-sm text-white/65">
+                Switch between dense lists, detail tables, and spacious galleries—no matter the view, metadata remains visible and aligned.
+              </p>
+            </article>
+            <article className="stack-gap rounded-md border border-[var(--divider)] p-5">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/55">Secure by default</p>
+              <h3 className="text-lg font-medium text-white">Passwords when needed</h3>
+              <p className="text-sm text-white/65">
+                Apply passphrases, provide contextual hints, and revoke instantly. Every download route verifies permissions before issuing a signed URL.
+              </p>
+            </article>
+            <article className="stack-gap rounded-md border border-[var(--divider)] p-5">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/55">Short-lived delivery</p>
+              <h3 className="text-lg font-medium text-white">QuickDrop shares</h3>
+              <p className="text-sm text-white/65">
+                Temporary links expire after one minute or a single download, keeping ad hoc handoffs lightweight without sacrificing control.
+              </p>
+            </article>
+          </div>
         </div>
       </section>
     </div>
   );
-  
 }
