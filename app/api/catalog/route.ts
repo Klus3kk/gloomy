@@ -105,8 +105,12 @@ const getCatalogFromFirestore = async (): Promise<CatalogFile[]> => {
     return [];
   }
 
-  return snapshot.docs.map((doc) => {
+  return snapshot.docs
+    .map((doc) => {
     const data = doc.data();
+    if (data.deletedAt) {
+      return null;
+    }
 
     return {
       id: doc.id,
@@ -123,7 +127,8 @@ const getCatalogFromFirestore = async (): Promise<CatalogFile[]> => {
         ? data.tags.map((tag) => String(tag))
         : [],
     };
-  });
+    })
+    .filter((entry): entry is CatalogFile => entry !== null);
 };
 
 export async function GET() {

@@ -30,6 +30,23 @@ export async function POST(request: Request) {
       );
     }
 
+    try {
+      const userRecord = await auth.getUser(decoded.uid);
+      const customClaims = userRecord.customClaims ?? {};
+      if (!customClaims.admin) {
+        await auth.setCustomUserClaims(decoded.uid, {
+          ...customClaims,
+          admin: true,
+        });
+      }
+    } catch (claimError) {
+      console.error("Unable to set admin custom claim", claimError);
+      return NextResponse.json(
+        { error: "Could not finalize admin session." },
+        { status: 500 },
+      );
+    }
+
     const sessionCookie = await auth.createSessionCookie(idToken, {
       expiresIn: SESSION_MAX_AGE_MS,
     });

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { getAdminSession } from "@/lib/auth/get-admin-session";
+import { AdminDashboard } from "@/components/admin/AdminDashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -23,18 +24,11 @@ export default async function AdminPage() {
           <span className="font-medium text-white">
             {session.email ?? session.uid}
           </span>
-          . This area will host upload management, metadata editing, and QuickDrop monitoring.
+          . Upload new assets, manage metadata, and keep the catalog current.
         </p>
       </header>
 
-      <section className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6">
-        <h2 className="text-lg font-medium text-white">Next steps</h2>
-        <ul className="mt-4 space-y-3 text-sm text-white/70">
-          <li>• Build the upload workflow backed by Firebase Storage.</li>
-          <li>• Surface file metadata from Firestore with admin-only filters.</li>
-          <li>• Add QuickDrop analytics and manual link revocation controls.</li>
-        </ul>
-      </section>
+      <AdminDashboard />
     </div>
   );
 }
