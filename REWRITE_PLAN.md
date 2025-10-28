@@ -34,8 +34,8 @@
    - Implement category grid/list with Firestore-driven data hooks (useSWR/React Query).
    - Add file detail modal containing description, visibility badge, password prompt, and download CTA.
 5. **QuickDrop UI**
-   - Create an upload form enforcing a 25 MB limit, with drag-and-drop, progress bar, and validation messaging.
-   - Display generated short link, live countdown timer, and state transitions (“Awaiting download”, “Consumed”, “Expired”).
+   - ✅ Create an upload form enforcing a 25 MB limit with progress feedback.
+   - ✅ Display generated short link, countdown timer, and state transitions (active, consumed, expired).
 6. **Admin Console**
    - Provide upload management table (sortable, filterable) showing status, visibility, last access, and controls.
    - Build forms for new uploads, metadata edits (title, category, password toggle), and revoke operations.
@@ -56,7 +56,7 @@
    - Enforce role checks in admin routes/components; hide admin navigation for non-admins.
 4. **Security Rules**
    - Author Firestore security rules covering catalog metadata, QuickDrop docs, and audit logs.
-   - Write Firebase Storage rules that restrict catalog writes to admins, limit QuickDrop uploads to authenticated users, and block direct public reads of private content.
+  - ✅ Storage rules restrict catalog writes to admins, allow anonymous-authenticated QuickDrop uploads, and block direct public reads of private content.
 5. **Audit & Logging**
    - Capture key events (upload, download, revoke, QuickDrop consume) in a `logs` collection for future reporting.
 
@@ -81,22 +81,15 @@
 
 ## 5. QuickDrop One-Off Share
 1. **Upload Handler**
-   - UI validates size ≤ 25 MB, rejects disallowed MIME types, and tags uploads with uploader UID.
-   - Invoke a dedicated Next.js API route to mint a random short token and create a Firestore `quickdrop` doc with `status:'pending'`, `expiresAt = now + 60s`, `downloadCount = 0`.
-   - Store binary under `quickdrop/{token}` in Storage with metadata referencing the doc ID.
+   - ✅ UI validates size ≤ 25 MB and requests a token via `/api/quickdrop` before uploading.
+   - ✅ Binaries land under `quickdrop/{token}` with Firestore docs tracking `pending → active → consumed` state.
 2. **Download Enforcement**
-   - `/api/quickdrop/[token]` validates doc, ensures `expiresAt > now`, `status === 'pending'`, `downloadCount === 0`.
-   - Generate a Storage signed URL (TTL ≤ 30s), stream or redirect to the client, then atomically mark doc `status:'consumed'`, `downloadCount = 1`, and trigger deletion of the Storage object.
-   - Return 410 Gone for expired or already-consumed tokens.
-3. **Cleanup Jobs**
-   - Schedule Cloud Function (pub/sub every minute) to delete docs/files where `expiresAt < now()` or `status:'consumed'`.
-   - Emit audit log entries for automatic deletions to aid debugging.
-4. **Client Feedback**
-   - Implement Firestore listener or polling to show countdown and status updates in the UI.
-   - Present copy-to-clipboard, share button, and warning when time is under 15 seconds.
-5. **Concurrency Safeguards**
-   - Use Firestore transactions in download API to prevent race conditions on `downloadCount`.
-   - Add unit/integration tests simulating simultaneous download attempts.
+   - ✅ `/api/quickdrop/[token]` enforces 60-second expiry and single-use consumption using Firestore transactions.
+   - 🚧 Automatic deletion/cleanup left for future Cloud Functions work.
+3. **Client Feedback**
+   - ✅ Countdown, copyable link, and status messaging implemented on share + recipient pages.
+4. **Concurrency Safeguards**
+   - ✅ Transactions prevent double consumption. Additional integration tests still to be added.
 
 ## 6. Infrastructure & Deployment
 1. **Hosting Topology**
@@ -131,7 +124,7 @@
 
 ## 8. Testing & Verification
 1. **Unit Tests**
-   - Cover utility functions (password hashing, token generation, countdown timers).
+   - ✅ Cover utility functions (password hashing, slug generation) using Node's test runner.
    - Mock Firebase SDKs to validate data layer logic.
 2. **Integration Tests**
    - Use Firebase Emulator Suite and Next.js test runner to cover upload → download flows, password checks, QuickDrop lifecycle.

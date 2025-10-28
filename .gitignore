@@ -17,6 +17,7 @@ files
 # next.js
 /.next/
 /out/
+.tmp-tests/
 
 # production
 /build
@@ -41,3 +42,4 @@ next-env.d.ts
 .firebaserc
 firebase.json 
 env/
+REWRITE_PLAN.md

@@ -2,6 +2,34 @@
 
 <img src="public/logo.png" alt="Gloomy Logo" width="75"/>
 
-Gloomy powers the private download experience. It blends a refined Next.js interface, p5-driven motion, and explorer-inspired layouts so internal teams can move from gallery views to dense detail tables without losing context.
+Gloomy is my take on a file delivery hub that actually feels considered. I wanted
+secure releases, QuickDrop bursts, and a UI that mirrors the calm structure of a
+well-organised explorer.
 
-> This repository is maintained for the gloomyclue.com product footprint and is not intended for public reuse or redistribution. For access requests or questions, use the contact channel published on the site.
+- Catalogue entries live in Firestore, backed by Firebase Storage and Cloudflare.
+- Password prompts hash on the client and every download goes through a signed URL.
+- QuickDrop spins up anonymous uploads with one-minute links and QR codes.
+
+## Testing & Security
+
+- Run unit tests via:
+
+  ```bash
+  npm run test
+  ```
+
+  This compiles TypeScript sources into `.tmp-tests` and executes Node's built-in test runner.
+
+- Run Snyk vulnerability checks:
+
+  ```bash
+  npm run security:snyk
+  ```
+
+  Authenticate with `snyk auth` beforehand. The CLI is declared as a dev dependency; install it with `npm install` if it is not present locally.
+
+## QuickDrop
+
+- Upload anonymously at `/quickdrop`. Files up to 25 MB generate a link that expires in 60 seconds and a QR code for easy device transfers.
+- Recipients visit `/quickdrop/<token>` to download once; the link self-destructs immediately after use.
+- Storage writes rely on Firebase anonymous auth. Keep Cloudflare rate-limiting/managed challenge enabled on `/quickdrop` routes to mitigate abuse.

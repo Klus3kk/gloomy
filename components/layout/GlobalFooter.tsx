@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 export const GlobalFooter = () => (
-  <footer className="border-t border-[var(--divider)] bg-[var(--base)]/96 py-8">
-    <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
-      <p>&copy; {new Date().getFullYear()} ClueSec. Secure file delivery platform.</p>
-      <div className="flex gap-5">
+  <footer className="border-t border-white/10 bg-transparent py-6">
+    <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 text-[11px] text-white/50 sm:flex-row sm:items-center sm:justify-between">
+      <p>&copy; {new Date().getFullYear()} ClueSec. Built for fuss-free file delivery.</p>
+      <div className="flex gap-4">
         <Link href="/privacy" className="transition hover:text-white">
           Privacy
         </Link>

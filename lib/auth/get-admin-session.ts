@@ -14,7 +14,8 @@ export type AdminSession = {
 };
 
 export const getAdminSession = async (): Promise<AdminSession | null> => {
-  const sessionCookie = cookies().get(SESSION_COOKIE)?.value;
+  const cookieStore = await Promise.resolve(cookies());
+  const sessionCookie = cookieStore.get(SESSION_COOKIE)?.value;
   if (!sessionCookie) {
     return null;
   }
