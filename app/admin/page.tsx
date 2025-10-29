@@ -24,7 +24,7 @@ export default async function AdminPage() {
           <span className="font-medium text-white">
             {session.email ?? session.uid}
           </span>
-          . Upload new assets, manage metadata, and keep the catalog current.
+          . Upload new assets, manage metadata and keep the catalog current.
         </p>
       </header>
 

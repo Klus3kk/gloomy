@@ -3,53 +3,25 @@ export default function AboutPage() {
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 py-16">
       <section className="space-y-4 border-b border-[var(--divider)] pb-8">
         <p className="text-xs uppercase tracking-[0.32em] text-white/55">
-          Why I built it
+          Why it exists
         </p>
         <h1 className="text-4xl font-semibold text-white sm:text-5xl">Gloomy</h1>
         <p className="max-w-3xl text-sm text-white/70 sm:text-base">
-          Gloomy is the platform I wanted while shipping internal builds—fast to navigate,
-          respectful of passwords, and shaped like the explorer views I live in all day.
-          Every screen you see here is the product of evenings spent polishing the little
-          things: hover states, signed URLs, Cloudflare rules, even the QuickDrop countdown.
+          Gloomy is a private hub for deliveries on gloomyclue.com. The goal: ship files
+          without dumping them into anonymous storage, keep passwords predictable, and make
+          the UI feel like a calm explorer view. Building it meant plenty of evenings spent
+          polishing details - from hover states to the QuickDrop countdown.
         </p>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="flex flex-col gap-6 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6">
-          <h2 className="text-lg font-medium text-white">What matters to me</h2>
-          <ul className="space-y-4 text-sm text-white/70">
-            <li>
-              <span className="text-white">Curated catalogue:</span> every asset carries
-              metadata, version context, and search-friendly tags so releases never vanish
-              into a shared drive abyss.
-            </li>
-            <li>
-              <span className="text-white">Adaptive protection:</span> hashed passwords,
-              signed URLs, Cloudflare WAF, and Firebase rules keep private builds gated
-              without making teammates jump through hoops.
-            </li>
-            <li>
-              <span className="text-white">QuickDrop tempo:</span> single-use, 60-second
-              links with QR codes for those “can you send me that now?” moments.
-            </li>
-            <li>
-              <span className="text-white">Observable operations:</span> unit tests, CI
-              linting, and Snyk scans run on every push—no disposable scripts, no half-baked
-              pipelines.
-            </li>
-          </ul>
-        </div>
-
         <aside className="flex flex-col gap-4 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6 text-sm text-white/70">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-white/55">
-            Stack Highlights
-          </h3>
-          <ul className="space-y-3">
-            <li>Next.js App Router with a custom dark theme and p5.js ambience.</li>
-            <li>Firebase Auth (GitHub + anonymous) and Admin SDK for server authority.</li>
-            <li>Firestore metadata + Storage buckets riding behind Cloudflare + CloudFront.</li>
-            <li>Node test runner, ESLint, and Snyk stitched into GitHub Actions.</li>
-          </ul>
+          <h3 className="text-sm uppercase tracking-[0.3em] text-white/55">Under the hood</h3>
+          <p>
+            Next.js, Firebase auth/storage, and Cloudflare at the edge. QuickDrop uses
+            anonymous auth + signed URLs. Tests, linting, and Snyk run on every push.
+            That&#39;s the essentials; the rest is polish.
+          </p>
         </aside>
       </section>
 
@@ -66,7 +38,7 @@ export default function AboutPage() {
           <h3 className="text-sm uppercase tracking-[0.3em] text-white/55">Contact</h3>
           <p className="mt-3 text-sm text-white/70">
             Need access? Curious about the stack? Ping me via the contact route on
-            gloomyclue.com. The repo stays private on purpose, but I’m always open to
+            gloomyclue.com. The repo stays private on purpose, but I am always open to
             comparing notes with people who care about the same details.
           </p>
         </div>

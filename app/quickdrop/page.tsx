@@ -223,7 +223,7 @@ export default function QuickDropPage() {
         <p className="text-sm text-white/65">
           Upload files up to 25 MB. Once activated, the link lasts 60 seconds
           and self-destructs after the first download. QuickDrop authenticates
-          anonymously, so no sign-in is required. Use responsibly—Cloudflare
+          anonymously, so no sign-in is required. Use responsibly: Cloudflare
           rate limits apply.
         </p>
       </header>

@@ -2,12 +2,6 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
-const stats = [
-  { label: "Releases tracked", value: "128" },
-  { label: "Protected assets", value: "64" },
-  { label: "Average retrieval", value: "2.1 s" },
-];
-
 const focusPoints = [
   {
     title: "Catalog discipline",
@@ -21,6 +15,12 @@ const focusPoints = [
     title: "Fast handoffs",
     detail: "QuickDrop creates a single-use link for 25 MB payloads—ideal for short-lived sharing during reviews.",
   },
+];
+
+const stats = [
+  { label: "Releases tracked", value: "128" },
+  { label: "Protected assets", value: "64" },
+  { label: "Average retrieval", value: "2.1 s" },
 ];
 
 export default function Home() {
@@ -113,7 +113,7 @@ export default function Home() {
                 Ship builds and assets with the same care you put into creating them.
               </h1>
               <p className="hero-subtitle max-w-xl text-balance">
-                Gloomy keeps binaries, documentation, and design artifacts discoverable, governed, and ready to share. Focus on the release—let the platform handle access and delivery.
+                Gloomy keeps binaries, documentation and design artifacts discoverable, governed and ready to share. Focus on the release - let the platform handle access and delivery.
               </p>
             </header>
 
@@ -143,7 +143,7 @@ export default function Home() {
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-white/55">Platform focus</p>
               <p className="mt-1 text-sm text-white/70">
-                Designed for teams who prefer clear hierarchies, fast navigation, and predictable download flows.
+                Designed for teams who prefer clear hierarchies, fast navigation and predictable download flows.
               </p>
             </div>
             <ul className="stack-gap">
@@ -172,7 +172,7 @@ export default function Home() {
               <p className="text-xs uppercase tracking-[0.3em] text-white/55">Explorer-inspired</p>
               <h3 className="text-lg font-medium text-white">Multiple view modes</h3>
               <p className="text-sm text-white/65">
-                Switch between dense lists, detail tables, and spacious galleries—no matter the view, metadata remains visible and aligned.
+                Switch between dense lists, detail tables, and spacious galleries: no matter the view, metadata remains visible and aligned.
               </p>
             </article>
             <article className="stack-gap rounded-md border border-[var(--divider)] p-5">

@@ -3,7 +3,7 @@
 import Link from "next/link";
 
 const Sidebar = () => {
-  const categories = ["Media", "Documents", "Software"]; // Example categories
+  const categories = ["Media", "Documents", "Software"]; // examples 
 
   return (
     <aside className="w-64 bg-gray-800 text-white h-full p-4 fixed">

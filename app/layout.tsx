@@ -5,7 +5,7 @@ import { GlobalHeader } from "@/components/layout/GlobalHeader";
 import { GlobalFooter } from "@/components/layout/GlobalFooter";
 
 export const metadata: Metadata = {
-  title: "Gloomy - File Downloader",
+  title: "Gloomy",
   description: "Securely download files with ease.",
 };
 

@@ -2,9 +2,9 @@
 
 <img src="public/logo.png" alt="Gloomy Logo" width="75"/>
 
-Gloomy is my take on a file delivery hub that actually feels considered. I wanted
-secure releases, QuickDrop bursts, and a UI that mirrors the calm structure of a
-well-organised explorer.
+Gloomy is a private file delivery hub for gloomyclue.com. The aim is simple:
+secure releases, QuickDrop bursts for short-lived sharing, and a clean dark UI
+that stays out of the way when you’re hunting for a build.
 
 - Catalogue entries live in Firestore, backed by Firebase Storage and Cloudflare.
 - Password prompts hash on the client and every download goes through a signed URL.
