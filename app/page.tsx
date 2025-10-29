@@ -13,15 +13,10 @@ const focusPoints = [
   },
   {
     title: "Fast handoffs",
-    detail: "QuickDrop creates a single-use link for 25 MB payloads—ideal for short-lived sharing during reviews.",
+    detail: "QuickDrop creates a single-use link for 25 MB payloads - ideal for short-lived sharing during reviews.",
   },
 ];
 
-const stats = [
-  { label: "Releases tracked", value: "128" },
-  { label: "Protected assets", value: "64" },
-  { label: "Average retrieval", value: "2.1 s" },
-];
 
 export default function Home() {
   useEffect(() => {
@@ -130,12 +125,24 @@ export default function Home() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              {stats.map((item) => (
-                <dl key={item.label} className="stack-gap rounded-md border border-[var(--divider)] px-4 py-3">
-                  <dt className="text-[11px] uppercase tracking-[0.28em] text-white/50">{item.label}</dt>
-                  <dd className="text-2xl font-semibold text-white">{item.value}</dd>
-                </dl>
-              ))}
+              <dl className="stack-gap rounded-md border border-[var(--divider)] px-4 py-3">
+                <dt className="text-[11px] uppercase tracking-[0.28em] text-white/50">Source of truth</dt>
+                <dd className="text-sm text-white/70">
+                  Catalogue entries stay searchable and tagged instead of being tossed into anonymous folders.
+                </dd>
+              </dl>
+              <dl className="stack-gap rounded-md border border-[var(--divider)] px-4 py-3">
+                <dt className="text-[11px] uppercase tracking-[0.28em] text-white/50">Password aware</dt>
+                <dd className="text-sm text-white/70">
+                  Passphrases hash on the client, and every download route verifies before issuing a signed URL.
+                </dd>
+              </dl>
+              <dl className="stack-gap rounded-md border border-[var(--divider)] px-4 py-3">
+                <dt className="text-[11px] uppercase tracking-[0.28em] text-white/50">QuickDrop</dt>
+                <dd className="text-sm text-white/70">
+                  One-minute links with QR codes for short-lived sharing. Anonymous uploads with a single tap.
+                </dd>
+              </dl>
             </div>
           </div>
 
