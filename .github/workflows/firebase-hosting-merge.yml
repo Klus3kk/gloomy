@@ -18,3 +18,5 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GLOOMY_63E37 }}
           channelId: live
           projectId: gloomy-63e37
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
