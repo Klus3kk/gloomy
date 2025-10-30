@@ -4,10 +4,18 @@ import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase/admin";
 import { isAuthorizedAdmin } from "@/lib/auth/is-authorized-admin";
 
-const SESSION_COOKIE = "gloomySession";
+const SESSION_COOKIE = "__session";
 const SESSION_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
 
 const getCookieStore = async () => Promise.resolve(cookies());
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const noStore = (response: NextResponse) => {
+  response.headers.set("Cache-Control", "no-store, max-age=0");
+  return response;
+};
 
 export async function POST(request: Request) {
   try {
@@ -67,12 +75,14 @@ export async function POST(request: Request) {
       sameSite: "lax",
     });
 
-    return response;
+    return noStore(response);
   } catch (error) {
     console.error("Failed to create admin session", error);
-    return NextResponse.json(
-      { error: "Unable to create admin session." },
-      { status: 500 },
+    return noStore(
+      NextResponse.json(
+        { error: "Unable to create admin session." },
+        { status: 500 },
+      ),
     );
   }
 }
@@ -82,10 +92,11 @@ export async function GET() {
   const sessionCookie = cookieStore.get(SESSION_COOKIE)?.value ?? null;
 
   if (!sessionCookie) {
-    return NextResponse.json(
+    const response = NextResponse.json(
       { isAdmin: false, reason: "No session cookie present." },
       { status: 401 },
     );
+    return noStore(response);
   }
 
   try {
@@ -93,23 +104,26 @@ export async function GET() {
     const decoded = await auth.verifySessionCookie(sessionCookie, true);
 
     if (!isAuthorizedAdmin(decoded)) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { isAdmin: false, reason: "Account not authorized." },
         { status: 403 },
       );
+      return noStore(response);
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       isAdmin: true,
       uid: decoded.uid,
       email: decoded.email ?? null,
     });
+    return noStore(response);
   } catch (error) {
     console.error("Session validation failed", error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { isAdmin: false, reason: "Session invalid or expired." },
       { status: 401 },
     );
+    return noStore(response);
   }
 }
 
@@ -126,7 +140,7 @@ export async function DELETE() {
   });
 
   if (!sessionCookie) {
-    return response;
+    return noStore(response);
   }
 
   try {
@@ -137,5 +151,5 @@ export async function DELETE() {
     console.error("Unable to revoke session cookie", error);
   }
 
-  return response;
+  return noStore(response);
 }

@@ -33,10 +33,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
+    let isMounted = true;
 
     try {
       const auth = getClientAuth();
       unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (!isMounted) {
+          return;
+        }
+
         setUser(firebaseUser);
         setLoading(false);
 
@@ -45,18 +50,52 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        try {
-          const response = await fetch("/api/auth/session");
-          if (response.ok) {
-            const data = await response.json();
-            setIsAdmin(Boolean(data.isAdmin));
-            setError(null);
-          } else {
+        const fetchSession = async (attempt = 0): Promise<void> => {
+          try {
+            const response = await fetch("/api/auth/session", {
+              cache: "no-store",
+              headers: {
+                Accept: "application/json",
+              },
+            });
+
+            if (!isMounted) {
+              return;
+            }
+
+            if (response.ok) {
+              const data = await response.json();
+              setIsAdmin(Boolean(data.isAdmin));
+              setError(null);
+              return;
+            }
+
+            const payload = await response.json().catch(() => ({}));
+            const shouldRetry =
+              response.status === 401 &&
+              payload?.reason === "No session cookie present." &&
+              attempt < 3;
+
+            if (shouldRetry) {
+              await new Promise((resolve) =>
+                setTimeout(resolve, 150 * Math.pow(2, attempt)),
+              );
+              if (!isMounted) {
+                return;
+              }
+              await fetchSession(attempt + 1);
+              return;
+            }
+          } catch {
+            // Ignore; will fall through to setIsAdmin(false).
+          }
+
+          if (isMounted) {
             setIsAdmin(false);
           }
-        } catch {
-          setIsAdmin(false);
-        }
+        };
+
+        await fetchSession();
       });
     } catch (configError) {
       const message =
@@ -68,6 +107,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     return () => {
+      isMounted = false;
       if (unsubscribe) {
         unsubscribe();
       }

@@ -3,8 +3,7 @@
 <img src="public/logo.png" alt="Gloomy Logo" width="75"/>
 
 Gloomy is a private file delivery hub for gloomyclue.com. The aim is simple:
-secure releases, QuickDrop bursts for short-lived sharing, and a clean dark UI
-that stays out of the way when you’re hunting for a build.
+secure releases and QuickDrop bursts for short-lived sharing.
 
 - Catalogue entries live in Firestore, backed by Firebase Storage and Cloudflare.
 - Password prompts hash on the client and every download goes through a signed URL.
@@ -19,14 +18,6 @@ that stays out of the way when you’re hunting for a build.
   ```
 
   This compiles TypeScript sources into `.tmp-tests` and executes Node's built-in test runner.
-
-- Run Snyk vulnerability checks:
-
-  ```bash
-  npm run security:snyk
-  ```
-
-  Authenticate with `snyk auth` beforehand. The CLI is declared as a dev dependency; install it with `npm install` if it is not present locally.
 
 ## QuickDrop
 

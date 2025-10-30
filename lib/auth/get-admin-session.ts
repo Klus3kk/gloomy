@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { adminAuth } from "@/lib/firebase/admin";
 import { isAuthorizedAdmin } from "./is-authorized-admin";
 
-const SESSION_COOKIE = "gloomySession";
+const SESSION_COOKIE = "__session";
 
 export type AdminSession = {
   uid: string;

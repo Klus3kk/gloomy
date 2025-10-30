@@ -44,3 +44,4 @@ firebase.json
 env/
 
 REWRITE_PLAN.md
+*.log

@@ -62,10 +62,11 @@ const loadConfig = (): AdminConfig => {
 export const isAuthorizedAdmin = (token: DecodedIdToken): boolean => {
   const { emails: allowedEmails, handles: allowedHandles } = loadConfig();
 
-  const signInProvider = token.firebase?.sign_in_provider;
-  if (signInProvider !== "github.com") {
-    return false;
+  if (token.admin === true) {
+    return true;
   }
+
+  const signInProvider = token.firebase?.sign_in_provider ?? null;
 
   const email = token.email?.toLowerCase();
   if (allowedEmails.length > 0 && email && allowedEmails.includes(email)) {
@@ -83,6 +84,22 @@ export const isAuthorizedAdmin = (token: DecodedIdToken): boolean => {
     return true;
   }
 
+  const hasGithubIdentity =
+    Array.isArray(providerIdentities) && providerIdentities.length > 0;
+
+  if (
+    !hasGithubIdentity &&
+    signInProvider !== "github.com" &&
+    signInProvider !== "custom"
+  ) {
+    return false;
+  }
+
   const allowAll = allowedEmails.length === 0 && allowedHandles.length === 0;
-  return allowAll;
+  return (
+    allowAll &&
+    (hasGithubIdentity ||
+      signInProvider === "github.com" ||
+      signInProvider === "custom")
+  );
 };
