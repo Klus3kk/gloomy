@@ -45,18 +45,28 @@ const useCountdown = (info: QuickDropInfo | null) => {
   return Math.floor(remaining / 1000);
 };
 
-export default function QuickDropTokenPage({
-  params,
-}: {
-  params: { token: string };
-}) {
-  const { token } = params;
+type PageProps = {
+  params: Promise<{ token: string }>;
+};
+
+export default function QuickDropTokenPage({ params }: PageProps) {
+  const [token, setToken] = useState<string | null>(null);
   const [info, setInfo] = useState<QuickDropInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
+    void params.then(({ token: resolved }) => {
+      setToken(resolved);
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
     const load = async () => {
       try {
         const response = await fetch(`/api/quickdrop/${token}`);
@@ -102,7 +112,7 @@ export default function QuickDropTokenPage({
   const canDownload = info?.status === "active" && countdown > 0 && !downloading;
 
   const handleDownload = async () => {
-    if (!canDownload) return;
+    if (!canDownload || !token) return;
     try {
       setDownloading(true);
       setError(null);

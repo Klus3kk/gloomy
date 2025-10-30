@@ -7,11 +7,16 @@ const EXPIRY_MS = 60_000;
 const getDoc = async (token: string) =>
   adminDb().collection("quickdrop").doc(token).get();
 
+type RouteContext = {
+  params: Promise<{ token: string }>;
+};
+
 export async function GET(
   _request: Request,
-  { params }: { params: { token: string } },
+  { params }: RouteContext,
 ) {
-  const doc = await getDoc(params.token);
+  const { token } = await params;
+  const doc = await getDoc(token);
 
   if (!doc.exists) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -39,7 +44,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { token: string } },
+  { params }: RouteContext,
 ) {
   try {
     const body = (await request.json()) as { downloadUrl?: string };
@@ -52,7 +57,8 @@ export async function PATCH(
       );
     }
 
-    const docRef = adminDb().collection("quickdrop").doc(params.token);
+    const { token } = await params;
+    const docRef = adminDb().collection("quickdrop").doc(token);
     const now = new Date();
 
     const result = await docRef.get();
@@ -75,9 +81,9 @@ export async function PATCH(
     });
 
     return NextResponse.json({
-      sharePath: `/quickdrop/${params.token}`,
+      sharePath: `/quickdrop/${token}`,
       expiresInMs: EXPIRY_MS,
-      token: params.token,
+      token,
     });
   } catch (error) {
     console.error("Failed to activate quickdrop", error);
@@ -90,10 +96,11 @@ export async function PATCH(
 
 export async function POST(
   _request: Request,
-  { params }: { params: { token: string } },
+  { params }: RouteContext,
 ) {
   const db = adminDb();
-  const docRef = db.collection("quickdrop").doc(params.token);
+  const { token } = await params;
+  const docRef = db.collection("quickdrop").doc(token);
 
   try {
     const result = await db.runTransaction(async (tx) => {

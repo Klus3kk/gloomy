@@ -233,7 +233,11 @@ const requestDownloadUrl = async (id: string, password?: string) => {
     }
   };
 
-  const viewOptions: { id: ViewMode; label: string; icon: JSX.Element }[] = [
+  const viewOptions: {
+    id: ViewMode;
+    label: string;
+    icon: React.ReactNode;
+  }[] = [
     {
       id: "gallery",
       label: "Gallery",
@@ -583,7 +587,7 @@ const requestDownloadUrl = async (id: string, password?: string) => {
               <div className="relative w-full sm:w-80">
                 <input
                   type="search"
-                  placeholder="Search files, tags, descriptions, or passwords hints"
+                  placeholder="Search files, tags, descriptions, or password hints"
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   className="h-10 w-full rounded-md border border-[var(--divider)] bg-transparent px-4 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none focus:ring-1 focus:ring-white/30"
