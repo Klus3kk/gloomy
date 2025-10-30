@@ -40,7 +40,6 @@ yarn-error.log*
 next-env.d.ts
 
 .firebaserc
-firebase.json 
 env/
 
 REWRITE_PLAN.md
