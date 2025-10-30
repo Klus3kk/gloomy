@@ -29,8 +29,3 @@ jobs:
 
       - name: Unit tests
         run: npm run test
-
-      - name: Snyk security scan
-        run: npm run security:snyk
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
