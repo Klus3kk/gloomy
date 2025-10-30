@@ -45,3 +45,4 @@ env/
 
 REWRITE_PLAN.md
 *.log
+test

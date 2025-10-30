@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { NextResponse } from "next/server";
 
 import { adminDb, adminStorage } from "@/lib/firebase/admin";
@@ -17,6 +18,12 @@ const buildContentDisposition = (fileName: string) => {
   const encoded = encodeURIComponent(fileName);
   return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
 };
+
+const bufferToArrayBuffer = (buffer: Buffer): ArrayBuffer =>
+  buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength,
+  ) as ArrayBuffer;
 
 type RouteContext = {
   params: Promise<{ token: string }>;
@@ -246,7 +253,9 @@ export async function POST(
     headers.set("Cache-Control", "no-store");
     headers.set("X-QuickDrop-Filename", encodeURIComponent(fileName));
 
-    return new Response(buffer, {
+    const body = bufferToArrayBuffer(buffer);
+
+    return new Response(body, {
       status: 200,
       headers,
     });

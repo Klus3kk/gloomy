@@ -33,6 +33,9 @@ const getSubtle = () => {
   return subtle;
 };
 
+const toArrayBuffer = (view: Uint8Array): ArrayBuffer =>
+  view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength) as ArrayBuffer;
+
 const deriveKey = async (password: string, salt: Uint8Array) => {
   const subtle = getSubtle();
   const baseKey = await subtle.importKey(
@@ -46,7 +49,7 @@ const deriveKey = async (password: string, salt: Uint8Array) => {
   const derivedBits = await subtle.deriveBits(
     {
       name: "PBKDF2",
-      salt,
+      salt: toArrayBuffer(salt),
       iterations: PBKDF2_ITERATIONS,
       hash: "SHA-256",
     },

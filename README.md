@@ -1,6 +1,4 @@
-# Gloomy
-
-<img src="public/logo.png" alt="Gloomy Logo" width="75"/>
+# <img src="public/logo.png" alt="Gloomy Logo" width="130"/>
 
 Gloomy is a private file delivery hub for gloomyclue.com. The aim is simple:
 secure releases and QuickDrop bursts for short-lived sharing.
