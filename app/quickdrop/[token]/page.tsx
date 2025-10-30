@@ -120,16 +120,42 @@ export default function QuickDropTokenPage({ params }: PageProps) {
         method: "POST",
       });
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error ?? "Unable to download");
+        let message = "Unable to download";
+        try {
+          const data = await response.json();
+          if (data && typeof data === "object" && "error" in data) {
+            const candidate = (data as { error?: unknown }).error;
+            if (typeof candidate === "string") {
+              message = candidate;
+            }
+          }
+        } catch {
+          // Ignore parse errors
+        }
+        throw new Error(message);
       }
-      const data = (await response.json()) as { downloadUrl: string };
+
+      const blob = await response.blob();
+      const suggestedNameHeader = response.headers.get("X-QuickDrop-Filename");
+      let suggestedName: string | null = null;
+      if (suggestedNameHeader) {
+        try {
+          suggestedName = decodeURIComponent(suggestedNameHeader);
+        } catch {
+          suggestedName = suggestedNameHeader;
+        }
+      }
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = data.downloadUrl;
-      link.download = info?.fileName ?? "quickdrop";
+      link.href = objectUrl;
+      link.download =
+        suggestedName && suggestedName.length > 0
+          ? suggestedName
+          : info?.fileName ?? "quickdrop";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
       setInfo((prev) =>
         prev
           ? {
@@ -151,8 +177,8 @@ export default function QuickDropTokenPage({ params }: PageProps) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-16">
-      <header className="space-y-2 border-b border-[var(--divider)] pb-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-12 sm:px-6">
+      <header className="space-y-3 border-b border-[var(--divider)] pb-6 text-center sm:text-left">
         <p className="text-xs uppercase tracking-[0.32em] text-white/55">
           QuickDrop
         </p>
@@ -163,11 +189,11 @@ export default function QuickDropTokenPage({ params }: PageProps) {
       </header>
 
       {loading ? (
-        <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6 text-white/70">
+        <div className="rounded-2xl border border-[var(--divider)]/80 bg-[var(--surface)]/95 p-6 text-white/70 shadow-lg shadow-black/20 backdrop-blur-sm sm:p-8">
           Loading QuickDrop…
         </div>
       ) : info ? (
-        <section className="flex flex-col gap-4 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6">
+        <section className="flex flex-col gap-5 rounded-2xl border border-[var(--divider)]/80 bg-[var(--surface)]/95 p-6 shadow-lg shadow-black/20 backdrop-blur-sm sm:p-8">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.32em] text-white/55">
@@ -197,7 +223,7 @@ export default function QuickDropTokenPage({ params }: PageProps) {
 
           {error ? <p className="text-xs text-rose-300">{error}</p> : null}
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => void handleDownload()}
@@ -209,7 +235,7 @@ export default function QuickDropTokenPage({ params }: PageProps) {
           </div>
         </section>
       ) : (
-        <div className="rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6 text-sm text-white/70">
+        <div className="rounded-2xl border border-[var(--divider)]/80 bg-[var(--surface)]/95 p-6 text-sm text-white/70 shadow-lg shadow-black/20 backdrop-blur-sm sm:p-8">
           {error ?? "QuickDrop not found or already consumed."}
         </div>
       )}

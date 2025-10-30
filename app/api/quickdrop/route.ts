@@ -1,19 +1,27 @@
 import { NextResponse } from "next/server";
 
 import { adminDb } from "@/lib/firebase/admin";
+import { cleanupExpiredQuickDrops } from "@/lib/quickdrop/admin";
 import { generateShortToken } from "@/lib/utils/token";
 
 const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 export async function POST(request: Request) {
   try {
+    await cleanupExpiredQuickDrops();
     const body = (await request.json()) as {
       fileName?: string;
       sizeBytes?: number;
+      contentType?: string;
     };
 
     const fileName = String(body.fileName ?? "").trim();
     const sizeBytes = Number(body.sizeBytes ?? 0);
+    const contentTypeRaw = body.contentType ?? "";
+    const contentType =
+      typeof contentTypeRaw === "string" && contentTypeRaw.trim().length > 0
+        ? contentTypeRaw.trim().slice(0, 255)
+        : "application/octet-stream";
 
     if (!fileName) {
       return NextResponse.json(
@@ -61,6 +69,7 @@ export async function POST(request: Request) {
       fileName,
       sizeBytes,
       storagePath,
+      contentType,
       createdAt: new Date(),
       createdBy: null,
       status: "pending",

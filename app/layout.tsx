@@ -19,7 +19,7 @@ export default function RootLayout({
       <body className="flex min-h-screen flex-col text-white">
         <Providers>
           <GlobalHeader />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pt-24 sm:pt-28">{children}</main>
           <GlobalFooter />
         </Providers>
       </body>

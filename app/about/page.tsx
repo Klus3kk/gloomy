@@ -1,6 +1,6 @@
 export default function AboutPage() {
   return (
-    <div className="flex w-full flex-col items-center gap-12 px-6 py-16">
+    <div className="flex w-full flex-col items-center gap-12 px-4 py-16 sm:px-6">
       <section className="flex w-full max-w-3xl flex-col items-center gap-4 border-b border-[var(--divider)] pb-8 text-center">
         <p className="text-xs uppercase tracking-[0.32em] text-white/55">
           Why it exists
@@ -29,7 +29,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <aside className="flex flex-col gap-4 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6 text-center text-sm text-white/70">
+        <aside className="flex flex-col gap-4 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6 text-left text-sm text-white/70">
           <h3 className="text-sm uppercase tracking-[0.3em] text-white/55">
             Under the hood
           </h3>

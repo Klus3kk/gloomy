@@ -3,10 +3,12 @@ import {
   cert,
   getApp,
   initializeApp,
+  type AppOptions,
 } from "firebase-admin/app";
 import type { App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage, type Storage } from "firebase-admin/storage";
 
 let adminApp: App | undefined;
 
@@ -75,6 +77,30 @@ const resolveProjectId = (): string | undefined =>
     }
   })();
 
+const resolveStorageBucket = (): string | undefined =>
+  process.env.FIREBASE_STORAGE_BUCKET ??
+  process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
+const buildOptions = ({
+  credential,
+  projectId,
+}: {
+  credential: AppOptions["credential"];
+  projectId?: string;
+}): AppOptions => {
+  const storageBucket = resolveStorageBucket();
+  const options: AppOptions = {
+    credential,
+  };
+  if (projectId) {
+    options.projectId = projectId;
+  }
+  if (storageBucket) {
+    options.storageBucket = storageBucket;
+  }
+  return options;
+};
+
 const getAdminApp = (): App => {
   if (adminApp) {
     return adminApp;
@@ -129,28 +155,35 @@ const getAdminApp = (): App => {
           "Firebase Admin credentials are missing and the project ID could not be inferred from the environment. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY or configure application default credentials.",
         );
       }
-      const app = initializeApp({
-        credential,
-        projectId: fallbackProjectId,
-      });
+      const app = initializeApp(
+        buildOptions({
+          credential,
+          projectId: fallbackProjectId,
+        }),
+      );
       cacheAdminApp(app);
       return app;
     }
-    const app = initializeApp({
-      credential,
-      projectId: inferredProjectId,
-    });
+    const app = initializeApp(
+      buildOptions({
+        credential,
+        projectId: inferredProjectId,
+      }),
+    );
     cacheAdminApp(app);
     return app;
   }
 
-  const app = initializeApp({
-    credential,
-    projectId,
-  });
+  const app = initializeApp(
+    buildOptions({
+      credential,
+      projectId,
+    }),
+  );
   cacheAdminApp(app);
   return app;
 };
 
 export const adminAuth = () => getAuth(getAdminApp());
 export const adminDb = () => getFirestore(getAdminApp());
+export const adminStorage = (): Storage => getStorage(getAdminApp());

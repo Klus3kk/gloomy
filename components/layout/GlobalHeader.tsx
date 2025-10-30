@@ -13,7 +13,7 @@ const NavLink = ({
 }) => (
   <Link
     href={href}
-    className="rounded-md px-3 py-2 text-sm text-white/75 transition hover:bg-white/10 hover:text-white"
+    className="rounded-md px-3 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white sm:text-sm"
   >
     {label}
   </Link>
@@ -23,10 +23,10 @@ export const GlobalHeader = () => {
   const { user, isAdmin, loading, signIn, signOut, error } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--divider)] bg-[var(--base)]/96">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-40 border-b border-[var(--divider)] bg-[var(--base)]/90 backdrop-blur-sm supports-[backdrop-filter]:bg-[var(--base)]/65">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
         <Link href="/" className="flex items-center gap-3 text-white">
-          <span className="flex h-11 w-11 items-center justify-center rounded-md border border-[var(--divider)] text-sm font-semibold tracking-[0.3em] text-white/80">
+          <span className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--divider)] text-sm font-semibold tracking-[0.3em] text-white/80 sm:h-11 sm:w-11">
             GL
           </span>
           <div>
@@ -37,7 +37,7 @@ export const GlobalHeader = () => {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-5 md:flex">
+        <nav className="order-last flex w-full flex-wrap items-center justify-center gap-2 text-xs text-white/65 sm:order-none sm:w-auto sm:gap-3 md:text-sm">
           <NavLink href="/downloads" label="Downloads" />
           <NavLink href="/about" label="About" />
           <NavLink href="/quickdrop" label="QuickDrop" />

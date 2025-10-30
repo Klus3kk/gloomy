@@ -69,10 +69,10 @@ footer {
 }
 
 .hero-title {
-  @apply text-5xl font-semibold mb-4 text-white;
+  @apply mb-4 text-4xl font-semibold text-white sm:text-5xl;
 }
 .hero-subtitle {
-  @apply text-lg text-white/70;
+  @apply text-base text-white/70 sm:text-lg;
 }
 
 .shadow {
@@ -109,5 +109,5 @@ button.text-blue-500 {
 }
 
 .stack-gap {
-  @apply flex flex-col gap-6;
+  @apply flex flex-col gap-5 sm:gap-6;
 }

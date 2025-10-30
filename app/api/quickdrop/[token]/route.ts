@@ -1,11 +1,22 @@
 import { NextResponse } from "next/server";
 
-import { adminDb } from "@/lib/firebase/admin";
+import { adminDb, adminStorage } from "@/lib/firebase/admin";
+import {
+  cleanupExpiredQuickDrops,
+  deleteQuickDropPayload,
+  isExpired,
+} from "@/lib/quickdrop/admin";
 
 const EXPIRY_MS = 60_000;
 
 const getDoc = async (token: string) =>
   adminDb().collection("quickdrop").doc(token).get();
+
+const buildContentDisposition = (fileName: string) => {
+  const fallback = fileName.replace(/["\r\n]/g, "_").slice(0, 255) || "quickdrop";
+  const encoded = encodeURIComponent(fileName);
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
+};
 
 type RouteContext = {
   params: Promise<{ token: string }>;
@@ -15,6 +26,7 @@ export async function GET(
   _request: Request,
   { params }: RouteContext,
 ) {
+  await cleanupExpiredQuickDrops();
   const { token } = await params;
   const doc = await getDoc(token);
 
@@ -24,39 +36,43 @@ export async function GET(
 
   const data = doc.data()!;
   const now = Date.now();
-  const expiresAt = data.expiresAt ? data.expiresAt.toDate().getTime() : null;
-  const remainingMs = expiresAt ? Math.max(0, expiresAt - now) : 0;
+  const expiresAtDate =
+    data.expiresAt && typeof data.expiresAt.toDate === "function"
+      ? data.expiresAt.toDate()
+      : data.expiresAt instanceof Date
+        ? data.expiresAt
+        : null;
+  const expired = data.status === "expired" || isExpired(data.expiresAt);
+  const remainingMs =
+    expiresAtDate && !expired ? Math.max(0, expiresAtDate.getTime() - now) : 0;
   const status =
     data.status === "consumed"
       ? "consumed"
-      : remainingMs <= 0 || data.status === "expired"
+      : expired
         ? "expired"
         : data.status;
 
-  return NextResponse.json({
+  const response = {
     status,
     fileName: data.fileName,
     sizeBytes: data.sizeBytes ?? 0,
-    expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+    expiresAt: expiresAtDate ? expiresAtDate.toISOString() : null,
     remainingMs,
-  });
+  };
+
+  if (status === "expired" || status === "consumed") {
+    await deleteQuickDropPayload(doc.ref, data);
+  }
+
+  return NextResponse.json(response);
 }
 
 export async function PATCH(
-  request: Request,
+  _request: Request,
   { params }: RouteContext,
 ) {
   try {
-    const body = (await request.json()) as { downloadUrl?: string };
-    const downloadUrl = String(body.downloadUrl ?? "").trim();
-
-    if (!downloadUrl) {
-      return NextResponse.json(
-        { error: "downloadUrl must be provided" },
-        { status: 400 },
-      );
-    }
-
+    await cleanupExpiredQuickDrops();
     const { token } = await params;
     const docRef = adminDb().collection("quickdrop").doc(token);
     const now = new Date();
@@ -75,7 +91,6 @@ export async function PATCH(
     }
 
     await docRef.update({
-      downloadUrl,
       status: "active",
       expiresAt: new Date(now.getTime() + EXPIRY_MS),
     });
@@ -98,46 +113,66 @@ export async function POST(
   _request: Request,
   { params }: RouteContext,
 ) {
+  await cleanupExpiredQuickDrops();
   const db = adminDb();
   const { token } = await params;
   const docRef = db.collection("quickdrop").doc(token);
 
+  type DownloadContext = {
+    storagePath: string;
+    fileName: string;
+    contentType: string;
+  };
+
+  let context: DownloadContext | null = null;
+
   try {
-    const result = await db.runTransaction(async (tx) => {
+    context = await db.runTransaction(async (tx) => {
       const snap = await tx.get(docRef);
       if (!snap.exists) {
         throw new Error("NOT_FOUND");
       }
 
       const data = snap.data()!;
-      const expiresAt = data.expiresAt?.toDate?.() ?? null;
       const now = new Date();
 
       if (data.status !== "active") {
         throw new Error("NOT_ACTIVE");
       }
 
-      if (!expiresAt || expiresAt.getTime() < now.getTime()) {
-        tx.update(docRef, { status: "expired" });
+      if (isExpired(data.expiresAt)) {
+        tx.update(docRef, { status: "expired", expiresAt: now });
         throw new Error("EXPIRED");
       }
 
       tx.update(docRef, {
         status: "consumed",
         consumedAt: now,
+        expiresAt: now,
       });
 
-      return data.downloadUrl as string | null;
+      const storagePath =
+        typeof data.storagePath === "string" ? data.storagePath : null;
+      if (!storagePath) {
+        throw new Error("MISSING_STORAGE_PATH");
+      }
+
+      const fileName =
+        typeof data.fileName === "string" && data.fileName.trim().length > 0
+          ? data.fileName
+          : `quickdrop-${token}`;
+      const contentType =
+        typeof data.contentType === "string" &&
+        data.contentType.trim().length > 0
+          ? data.contentType.trim()
+          : "application/octet-stream";
+
+      return {
+        storagePath,
+        fileName,
+        contentType,
+      };
     });
-
-    if (!result) {
-      return NextResponse.json(
-        { error: "Download URL unavailable" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ downloadUrl: result });
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "NOT_FOUND") {
@@ -149,12 +184,83 @@ export async function POST(
       if (error.message === "EXPIRED") {
         return NextResponse.json({ error: "Expired" }, { status: 410 });
       }
+      if (error.message === "MISSING_STORAGE_PATH") {
+        console.error(
+          `QuickDrop ${token} missing storagePath while consuming`,
+        );
+        return NextResponse.json(
+          { error: "Unavailable" },
+          { status: 410 },
+        );
+      }
     }
 
-    console.error("Failed to fulfil quickdrop download", error);
+    console.error("Failed to prepare quickdrop download", error);
     return NextResponse.json(
       { error: "Unable to prepare download." },
       { status: 500 },
+    );
+  }
+
+  if (!context) {
+    return NextResponse.json(
+      { error: "Unable to prepare download." },
+      { status: 500 },
+    );
+  }
+
+  const { storagePath, fileName, contentType } = context;
+  const storage = adminStorage();
+  const fileHandle = storage.bucket().file(storagePath);
+
+  let metadataContentType: string | undefined;
+
+  try {
+    const [metadata] = await fileHandle.getMetadata();
+    metadataContentType = metadata?.contentType ?? undefined;
+  } catch (error) {
+    metadataContentType = undefined;
+    console.warn(
+      `Unable to read metadata for QuickDrop payload ${storagePath}`,
+      error instanceof Error ? error.message : error,
+    );
+  }
+
+  const ensureCleanup = async () => {
+    await deleteQuickDropPayload(docRef, { storagePath });
+  };
+
+  try {
+    const [buffer] = await fileHandle.download();
+    await ensureCleanup();
+
+    const resolvedContentType =
+      metadataContentType && metadataContentType.trim().length > 0
+        ? metadataContentType
+        : contentType;
+
+    const headers = new Headers();
+    headers.set("Content-Type", resolvedContentType);
+    headers.set("Content-Length", buffer.length.toString());
+    headers.set("Content-Disposition", buildContentDisposition(fileName));
+    headers.set("Cache-Control", "no-store");
+    headers.set("X-QuickDrop-Filename", encodeURIComponent(fileName));
+
+    return new Response(buffer, {
+      status: 200,
+      headers,
+    });
+  } catch (error) {
+    await ensureCleanup();
+
+    console.error(
+      `Failed to stream QuickDrop payload for ${token}`,
+      error,
+    );
+
+    return NextResponse.json(
+      { error: "Download unavailable" },
+      { status: 410 },
     );
   }
 }

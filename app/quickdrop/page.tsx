@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { ref, uploadBytesResumable } from "firebase/storage";
 import { signInAnonymously } from "firebase/auth";
 import QRCode from "qrcode";
 
@@ -140,6 +140,7 @@ export default function QuickDropPage() {
         body: JSON.stringify({
           fileName: file.name,
           sizeBytes: file.size,
+          contentType: file.type,
         }),
       });
 
@@ -175,14 +176,12 @@ export default function QuickDropPage() {
 
       setState("activating");
 
-      const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-
       const activateResponse = await fetch(`/api/quickdrop/${init.token}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ downloadUrl }),
+        body: JSON.stringify({}),
       });
 
       if (!activateResponse.ok) {
@@ -212,8 +211,8 @@ export default function QuickDropPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-6 py-16">
-      <header className="space-y-2 border-b border-[var(--divider)] pb-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 px-4 py-12 sm:px-6 lg:max-w-5xl">
+      <header className="space-y-3 border-b border-[var(--divider)] pb-6 text-center sm:text-left">
         <p className="text-xs uppercase tracking-[0.32em] text-white/55">
           QuickDrop
         </p>
@@ -230,9 +229,9 @@ export default function QuickDropPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6"
+        className="flex flex-col gap-5 rounded-2xl border border-[var(--divider)]/80 bg-[var(--surface)]/95 p-6 shadow-lg shadow-black/20 backdrop-blur-sm sm:p-8"
       >
-        <label className="flex flex-col gap-1 text-xs uppercase tracking-[0.25em] text-white/55">
+        <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.25em] text-white/55">
           File
           <input
             type="file"
@@ -244,7 +243,7 @@ export default function QuickDropPage() {
               setExpiresAt(null);
               setToken(null);
             }}
-            className="rounded-md border border-[var(--divider)] bg-transparent px-3 py-2 text-sm text-white focus:border-white/35 focus:outline-none"
+            className="block w-full cursor-pointer rounded-lg border border-dashed border-white/20 bg-black/30 px-4 py-4 text-sm text-white/80 transition hover:border-white/35 focus:border-white/40 focus:outline-none file:mr-3 file:rounded-md file:border-0 file:bg-white/20 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white"
           />
           {file ? (
             <span className="text-[11px] text-white/60">
@@ -273,7 +272,7 @@ export default function QuickDropPage() {
         ) : null}
         {error ? <p className="text-xs text-rose-300">{error}</p> : null}
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="submit"
             disabled={!ready || state !== "idle" || !file}
@@ -298,13 +297,15 @@ export default function QuickDropPage() {
       </form>
 
       {link ? (
-        <section className="flex flex-col gap-4 rounded-xl border border-[var(--divider)] bg-[var(--surface)] p-6">
-          <h2 className="text-lg font-medium text-white">Share link</h2>
-          <p className="text-sm text-white/60">
-            This link expires in {countdown} second{countdown === 1 ? "" : "s"}
-            {" "}
-            or immediately after it is downloaded once.
-          </p>
+        <section className="flex flex-col gap-5 rounded-2xl border border-[var(--divider)]/80 bg-[var(--surface)]/95 p-6 shadow-lg shadow-black/20 backdrop-blur-sm sm:p-8">
+          <div className="flex flex-col gap-2 text-center sm:text-left">
+            <h2 className="text-lg font-medium text-white">Share link</h2>
+            <p className="text-sm text-white/60">
+              This link expires in {countdown} second{countdown === 1 ? "" : "s"}
+              {" "}
+              or immediately after it is downloaded once.
+            </p>
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <code className="flex-1 truncate rounded-md border border-[var(--divider)] bg-black/30 px-3 py-2 text-xs text-white/80">
               {link}
@@ -321,11 +322,11 @@ export default function QuickDropPage() {
             </button>
           </div>
           {qrData ? (
-            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-              <div className="rounded-md border border-[var(--divider)] bg-black/20 p-4">
-                <img src={qrData} alt="QuickDrop QR" className="h-32 w-32" />
+            <div className="flex flex-col gap-4 rounded-lg border border-[var(--divider)]/70 bg-black/25 p-4 sm:flex-row sm:items-center">
+              <div className="mx-auto flex h-36 w-36 items-center justify-center overflow-hidden rounded-md border border-[var(--divider)] bg-black/30 p-4 sm:mx-0">
+                <img src={qrData} alt="QuickDrop QR" className="h-28 w-28" />
               </div>
-              <p className="text-xs text-white/60">
+              <p className="text-xs text-white/60 sm:max-w-xs">
                 Scan the QR code to download on another device. The link remains active while the countdown is running.
               </p>
             </div>
