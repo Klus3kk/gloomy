@@ -15,7 +15,7 @@ This document focuses particularly on the QuickDrop workflow that allows anonymo
 
 | Threat | Description | Mitigation |
 | --- | --- | --- |
-| Abuse of anonymous upload API | Attackers spam `/quickdrop` to exhaust storage or deliver malware. | Cloudflare managed rules + server-side per-IP rate limiting; bucket lifecycle rules purge expired files; upload size capped at 25 MB; add ClamAV or commercial malware scanning via Cloud Functions before link activation. |
+| Abuse of anonymous upload API | Attackers spam `/quickdrop` to exhaust storage or deliver malware. | Cloudflare managed rules + server-side per-IP rate limiting; unclaimed uploads auto-expire after 10 minutes; bucket lifecycle rules purge expired files; upload size capped at 25 MB; add ClamAV or commercial malware scanning via Cloud Functions before link activation. |
 | Malware distribution via shared link | Uploaded content used to spread malicious payloads. | Introduce asynchronous scanning pipeline; quarantine file until scanner marks clean; display “scan in progress” UX. |
 | Token brute force | Attackers guess QuickDrop tokens before intended recipient downloads. | 32-byte random token encoded as base64url (~43 chars, >= 256 bits) stored in Firestore; tokens expire after 60 seconds or first access; rate limiting on token lookup endpoint. |
 | Replay of download URL | Download URL reused after first access. | Firestore document deletion on first successful download; signed URLs with 1-minute expiry; Storage rules prevent direct listing. |

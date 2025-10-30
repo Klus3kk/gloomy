@@ -7,8 +7,7 @@ import {
   deleteQuickDropPayload,
   isExpired,
 } from "@/lib/quickdrop/admin";
-
-const EXPIRY_MS = 60_000;
+import { QUICKDROP_ACTIVE_EXPIRY_MS } from "@/lib/quickdrop/constants";
 
 const getDoc = async (token: string) =>
   adminDb().collection("quickdrop").doc(token).get();
@@ -99,12 +98,12 @@ export async function PATCH(
 
     await docRef.update({
       status: "active",
-      expiresAt: new Date(now.getTime() + EXPIRY_MS),
+      expiresAt: new Date(now.getTime() + QUICKDROP_ACTIVE_EXPIRY_MS),
     });
 
     return NextResponse.json({
       sharePath: `/quickdrop/${token}`,
-      expiresInMs: EXPIRY_MS,
+      expiresInMs: QUICKDROP_ACTIVE_EXPIRY_MS,
       token,
     });
   } catch (error) {

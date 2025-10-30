@@ -27,6 +27,7 @@ flowchart LR
 - **Rate limiting (`lib/quickdrop/rate-limit.ts`)**: Hashes client identifiers and throttles QuickDrop initialisations per IP window.
 - **Firebase Admin layer (`lib/firebase/admin.ts`)**: Boots server-side SDK with least-privilege credentials.
 - **Security rules (`firestore.rules`, `storage.rules`)**: Govern client-side access for both catalogue viewers and anonymous QuickDrop uploads.
+- **Cleanup utilities (`lib/quickdrop/admin.ts`)**: Purge expired or abandoned QuickDrop documents and their storage payloads.
 
 ## Deployment Pipeline
 

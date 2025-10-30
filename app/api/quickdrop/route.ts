@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { cleanupExpiredQuickDrops } from "@/lib/quickdrop/admin";
 import { allowQuickDropRequest } from "@/lib/quickdrop/rate-limit";
 import { generateSecureToken } from "@/lib/utils/token";
+import { QUICKDROP_PENDING_EXPIRY_MS } from "@/lib/quickdrop/constants";
 
 const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
@@ -91,16 +92,17 @@ export async function POST(request: Request) {
 
     const storagePath = `quickdrop/${token}/${fileName}`;
 
+    const now = Date.now();
     await db.collection("quickdrop").doc(token).set({
       fileName,
       sizeBytes,
       storagePath,
       contentType,
-      createdAt: new Date(),
+      createdAt: new Date(now),
       createdBy: null,
       status: "pending",
       downloadUrl: null,
-      expiresAt: null,
+      expiresAt: new Date(now + QUICKDROP_PENDING_EXPIRY_MS),
       consumedAt: null,
     });
 
