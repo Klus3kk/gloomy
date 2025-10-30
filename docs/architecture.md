@@ -24,6 +24,7 @@ flowchart LR
 
 - **App routes (`app/`)**: Public catalogue, download flows, QuickDrop UI, and admin console.
 - **API routes (`app/api/`)**: Generate signed URLs, enforce password gating, and mediate QuickDrop link lifecycle.
+- **Rate limiting (`lib/quickdrop/rate-limit.ts`)**: Hashes client identifiers and throttles QuickDrop initialisations per IP window.
 - **Firebase Admin layer (`lib/firebase/admin.ts`)**: Boots server-side SDK with least-privilege credentials.
 - **Security rules (`firestore.rules`, `storage.rules`)**: Govern client-side access for both catalogue viewers and anonymous QuickDrop uploads.
 

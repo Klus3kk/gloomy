@@ -2,13 +2,39 @@ import { NextResponse } from "next/server";
 
 import { adminDb } from "@/lib/firebase/admin";
 import { cleanupExpiredQuickDrops } from "@/lib/quickdrop/admin";
-import { generateShortToken } from "@/lib/utils/token";
+import { allowQuickDropRequest } from "@/lib/quickdrop/rate-limit";
+import { generateSecureToken } from "@/lib/utils/token";
 
 const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+
+const extractClientPrincipal = (request: Request) => {
+  const headerCandidates = [
+    request.headers.get("cf-connecting-ip"),
+    request.headers.get("x-real-ip"),
+    request.headers.get("x-forwarded-for"),
+  ];
+
+  for (const candidate of headerCandidates) {
+    if (candidate && candidate.trim().length > 0) {
+      return candidate.split(",")[0].trim().slice(0, 128);
+    }
+  }
+
+  return "unknown";
+};
 
 export async function POST(request: Request) {
   try {
     await cleanupExpiredQuickDrops();
+    const clientPrincipal = extractClientPrincipal(request);
+    const allowed = await allowQuickDropRequest(clientPrincipal);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many QuickDrop initialisations. Try again later." },
+        { status: 429 },
+      );
+    }
+
     const body = (await request.json()) as {
       fileName?: string;
       sizeBytes?: number;
@@ -48,7 +74,7 @@ export async function POST(request: Request) {
     let token: string | null = null;
     let attempts = 0;
     while (!token && attempts < 5) {
-      const candidate = generateShortToken(10);
+      const candidate = generateSecureToken();
       const existing = await db.collection("quickdrop").doc(candidate).get();
       if (!existing.exists) {
         token = candidate;
