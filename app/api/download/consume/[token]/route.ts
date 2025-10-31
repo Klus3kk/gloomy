@@ -160,9 +160,10 @@ export async function GET(_request: Request, { params }: RouteContext) {
 
   const contentType = metadata?.contentType ?? "application/octet-stream";
   const size = metadata?.size ? Number(metadata.size) : undefined;
-  const filename = metadata?.name
+  const filenameRaw = metadata?.name
     ? metadata.name.split("/").pop()
-    : storagePath.split("/").pop() ?? `${id}.bin`;
+    : storagePath.split("/").pop();
+  const filename = filenameRaw && filenameRaw.length > 0 ? filenameRaw : `${id}.bin`;
 
   const nodeStream = file.createReadStream();
   const webStream = Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>;
