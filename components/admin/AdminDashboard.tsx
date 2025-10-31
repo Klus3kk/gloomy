@@ -17,6 +17,7 @@ type AdminFile = {
   sizeBytes: number;
   passwordHint: string | null;
   hasPassword: boolean;
+  deleteAfterDownload: boolean;
   tags: string[];
   createdAt: string | null;
   updatedAt: string | null;
@@ -48,6 +49,7 @@ const UploadForm = ({
   const [password, setPassword] = useState("");
   const [passwordHint, setPasswordHint] = useState("");
   const [tags, setTags] = useState("");
+  const [deleteAfterDownload, setDeleteAfterDownload] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [state, setState] = useState<UploadState>("idle");
@@ -61,6 +63,7 @@ const UploadForm = ({
     setPassword("");
     setPasswordHint("");
     setTags("");
+    setDeleteAfterDownload(false);
     setFile(null);
     setProgress(0);
     setState("idle");
@@ -138,6 +141,7 @@ const UploadForm = ({
             passwordHint:
               visibility === "password" ? passwordHint || null : null,
             tags,
+            deleteAfterDownload,
             downloadUrl,
             storagePath,
             sizeBytes: file.size,
@@ -233,6 +237,23 @@ const UploadForm = ({
         </label>
       </div>
 
+      <label className="flex items-start gap-3 rounded-md border border-[var(--divider)] px-3 py-3 text-xs text-white/70">
+        <input
+          type="checkbox"
+          checked={deleteAfterDownload}
+          onChange={(event) => setDeleteAfterDownload(event.target.checked)}
+          className="mt-1 h-4 w-4 accent-white"
+        />
+        <span className="flex flex-col gap-1">
+          <span className="text-xs uppercase tracking-[0.25em] text-white/55">
+            Auto delete after download
+          </span>
+          <span className="text-xs normal-case text-white/60">
+            Remove the asset immediately after the first successful download.
+          </span>
+        </span>
+      </label>
+
       {visibility === "password" ? (
         <div className="grid gap-4 md:grid-cols-2">
           <label className="flex flex-col gap-1 text-xs uppercase tracking-[0.25em] text-white/55">
@@ -316,6 +337,9 @@ const EditModal = ({
   const [passwordHint, setPasswordHint] = useState(file.passwordHint ?? "");
   const [downloadUrl, setDownloadUrl] = useState(file.downloadUrl);
   const [tags, setTags] = useState(file.tags.join(", "));
+  const [deleteAfterDownload, setDeleteAfterDownload] = useState(
+    file.deleteAfterDownload,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -360,6 +384,7 @@ const EditModal = ({
           passwordSalt,
           passwordHint: passwordHintPayload,
           tags,
+          deleteAfterDownload,
           downloadUrl: downloadUrl.trim(),
         }),
       });
@@ -447,6 +472,23 @@ const EditModal = ({
             />
           </label>
         </div>
+
+        <label className="flex items-start gap-3 rounded-md border border-[var(--divider)] px-3 py-3 text-xs text-white/70">
+          <input
+            type="checkbox"
+            checked={deleteAfterDownload}
+            onChange={(event) => setDeleteAfterDownload(event.target.checked)}
+            className="mt-1 h-4 w-4 accent-white"
+          />
+          <span className="flex flex-col gap-1">
+            <span className="text-xs uppercase tracking-[0.25em] text-white/55">
+              Auto delete after download
+            </span>
+            <span className="text-xs normal-case text-white/60">
+              Remove the asset immediately after the first successful download.
+            </span>
+          </span>
+        </label>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="flex flex-col gap-1 text-xs uppercase tracking-[0.25em] text-white/55">
@@ -698,6 +740,9 @@ export const AdminDashboard = () => {
                   Size
                 </th>
                 <th className="border-b border-[var(--divider)] px-4 py-2">
+                  Retention
+                </th>
+                <th className="border-b border-[var(--divider)] px-4 py-2">
                   Created
                 </th>
                 <th className="border-b border-[var(--divider)] px-4 py-2 text-right">
@@ -722,6 +767,9 @@ export const AdminDashboard = () => {
                   </td>
                   <td className="border-b border-[var(--divider)] px-4 py-3 text-xs text-white/60">
                     {formatSize(file.sizeBytes)}
+                  </td>
+                  <td className="border-b border-[var(--divider)] px-4 py-3 text-xs text-white/65">
+                    {file.deleteAfterDownload ? "One-time" : "Persistent"}
                   </td>
                   <td className="border-b border-[var(--divider)] px-4 py-3 text-xs text-white/60">
                     {file.createdAt

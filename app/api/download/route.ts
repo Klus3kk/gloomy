@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 
 import { adminDb } from "@/lib/firebase/admin";
 import { verifyPassword } from "@/lib/security/password";
@@ -6,6 +7,13 @@ import { fallbackFiles } from "@/lib/catalog/fallback";
 
 const findFallback = (id: string) =>
   fallbackFiles.find((file) => file.id === id);
+
+class AutoDeleteUnavailableError extends Error {
+  constructor(message?: string) {
+    super(message ?? "File is no longer available.");
+    this.name = "AutoDeleteUnavailableError";
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -21,21 +29,41 @@ export async function POST(request: Request) {
       );
     }
 
-    const docRef = adminDb().collection("files").doc(id);
+    const db = adminDb();
+    const docRef = db.collection("files").doc(id);
     const doc = await docRef.get();
 
     const data = doc.exists ? doc.data() : undefined;
     const fallback = !doc.exists ? findFallback(id) : undefined;
 
     if (!data && !fallback) {
-      return NextResponse.json({ error: "File not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "File not found." },
+        { status: 404 },
+      );
     }
 
-    const visibility = data?.visibility ?? fallback?.visibility ?? "public";
+    if (data?.deletedAt) {
+      return NextResponse.json(
+        { error: "File is no longer available." },
+        { status: 404 },
+      );
+    }
+
+    const visibility =
+      (typeof data?.visibility === "string"
+        ? data.visibility
+        : fallback?.visibility) ?? "public";
 
     if (visibility === "password") {
-      const passwordHash = data?.passwordHash ?? fallback?.passwordHash;
-      const passwordSalt = data?.passwordSalt ?? fallback?.passwordSalt;
+      const passwordHash =
+        typeof data?.passwordHash === "string"
+          ? data.passwordHash
+          : fallback?.passwordHash;
+      const passwordSalt =
+        typeof data?.passwordSalt === "string"
+          ? data.passwordSalt
+          : fallback?.passwordSalt;
 
       if (!passwordHash || !passwordSalt) {
         return NextResponse.json(
@@ -65,8 +93,77 @@ export async function POST(request: Request) {
       }
     }
 
+    const rawStoragePath =
+      typeof data?.storagePath === "string" ? data.storagePath : null;
+    const deleteAfterDownload = Boolean(data?.deleteAfterDownload);
+
+    if (deleteAfterDownload) {
+      if (!rawStoragePath) {
+        return NextResponse.json(
+          { error: "Storage path missing for auto-delete asset." },
+          { status: 500 },
+        );
+      }
+
+      try {
+        const tokenSecret = await db.runTransaction(async (tx) => {
+          const snapshot = await tx.get(docRef);
+          if (!snapshot.exists) {
+            throw new AutoDeleteUnavailableError();
+          }
+          const current = snapshot.data();
+          if (!current) {
+            throw new AutoDeleteUnavailableError();
+          }
+          if (current.deletedAt || current.autoDeleteConsumedAt) {
+            throw new AutoDeleteUnavailableError();
+          }
+          if (!current.deleteAfterDownload) {
+            return null;
+          }
+
+          const existingToken =
+            typeof current.autoDeleteToken === "string"
+              ? current.autoDeleteToken
+              : null;
+
+          if (existingToken) {
+            return existingToken;
+          }
+
+          const generated = randomUUID();
+          tx.update(docRef, {
+            autoDeleteToken: generated,
+            autoDeleteIssuedAt: new Date(),
+          });
+          return generated;
+        });
+
+        if (tokenSecret) {
+          const token = `${doc.id}.${tokenSecret}`;
+          return NextResponse.json({
+            downloadUrl: `/api/download/consume/${encodeURIComponent(token)}`,
+          });
+        }
+      } catch (error) {
+        if (error instanceof AutoDeleteUnavailableError) {
+          return NextResponse.json(
+            { error: error.message },
+            { status: 404 },
+          );
+        }
+        console.error("Failed to provision auto-delete token", error);
+        return NextResponse.json(
+          { error: "Unable to prepare download." },
+          { status: 500 },
+        );
+      }
+    }
+
     const downloadUrl =
-      data?.downloadUrl ?? fallback?.downloadUrl ?? null;
+      (typeof data?.downloadUrl === "string"
+        ? data.downloadUrl
+        : fallback?.downloadUrl) ?? null;
 
     if (!downloadUrl) {
       return NextResponse.json(
