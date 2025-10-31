@@ -86,6 +86,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               await fetchSession(attempt + 1);
               return;
             }
+
+            if (
+              response.status === 401 &&
+              payload?.reason === "No session cookie present."
+            ) {
+              try {
+                await signOutUser();
+              } catch (signOutError) {
+                console.warn(
+                  "Failed to sign out after missing session cookie",
+                  signOutError,
+                );
+              }
+              if (isMounted) {
+                setUser(null);
+                setIsAdmin(false);
+              }
+              return;
+            }
           } catch {
             // Ignore; will fall through to setIsAdmin(false).
           }
