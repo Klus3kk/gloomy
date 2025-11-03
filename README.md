@@ -1,4 +1,4 @@
-# <img src="public/logo.png" alt="Gloomy Logo" width="130"/>
+# <img src="public/logo.png" alt="Gloomy Logo" width="120"/>
 
 Gloomy is a private file delivery. The aim is simple: secure releases and QuickDrop bursts for short-lived sharing.
 
