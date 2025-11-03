@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -26,8 +27,15 @@ export const GlobalHeader = () => {
     <header className="sticky top-0 z-40 border-b border-[var(--divider)] bg-[var(--base)]/90 backdrop-blur-sm supports-[backdrop-filter]:bg-[var(--base)]/65">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
         <Link href="/" className="flex items-center gap-3 text-white">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--divider)] text-sm font-semibold tracking-[0.3em] text-white/80 sm:h-11 sm:w-11">
-            GL
+          <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-[var(--divider)] bg-white/5 sm:h-11 sm:w-11">
+            <Image
+              src="/logo.png"
+              alt="Gloomy logo"
+              width={56}
+              height={56}
+              className="h-full w-full object-contain"
+              priority
+            />
           </span>
           <div>
             <p className="text-[11px] uppercase tracking-[0.35em] text-white/60">

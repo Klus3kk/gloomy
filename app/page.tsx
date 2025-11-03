@@ -93,7 +93,7 @@ export default function Home() {
 
   return (
     <div className="relative flex flex-col gap-24 pb-24">
-      <section className="relative overflow-hidden border-b border-[var(--divider)]">
+      <section className="relative overflow-hidden border-b border-[var(--divider)] pt-20 sm:pt-24 lg:pt-28">
         <canvas
           id="particles"
           className="pointer-events-none absolute inset-0 h-full w-full opacity-30"
@@ -101,7 +101,7 @@ export default function Home() {
         <div className="absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-white/10 blur-3xl sm:h-96 sm:w-96" />
         <div className="absolute -right-16 bottom-0 h-56 w-56 rounded-full bg-[var(--accent)]/10 blur-3xl sm:h-72 sm:w-72" />
 
-        <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-12 px-8 py-6 sm:px-6 sm:py-4 lg:flex-row lg:items-center">
+        <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-12 px-8 pb-12 sm:px-6 sm:pb-10 lg:flex-row lg:items-center">
           <div className="flex-1 space-y-10 text-center">
             <header className="space-y-3">
               <p className="text-xs uppercase tracking-[0.35em] text-white/55">

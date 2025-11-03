@@ -42,10 +42,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        setUser(firebaseUser);
+        const visibleUser =
+          firebaseUser && !firebaseUser.isAnonymous ? firebaseUser : null;
+
+        setUser(visibleUser);
         setLoading(false);
 
         if (!firebaseUser) {
+          setIsAdmin(false);
+          return;
+        }
+
+        if (firebaseUser.isAnonymous) {
           setIsAdmin(false);
           return;
         }

@@ -7,6 +7,11 @@ import { GlobalFooter } from "@/components/layout/GlobalFooter";
 export const metadata: Metadata = {
   title: "Gloomy",
   description: "Securely download files with ease.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -19,7 +24,7 @@ export default function RootLayout({
       <body className="flex min-h-screen flex-col text-white">
         <Providers>
           <GlobalHeader />
-          <main className="flex-1 pt-24 sm:pt-28">{children}</main>
+          <main className="flex-1">{children}</main>
           <GlobalFooter />
         </Providers>
       </body>
